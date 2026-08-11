@@ -1,0 +1,101 @@
+semantic_models:
+  # ------------------------------------------------------------------------------------
+  - name: play_sessions
+    description: Engagement semantic model over the session fact.
+    model: ref('fct_play_sessions')
+    defaults:
+      agg_time_dimension: session_day
+    entities:
+      - name: session
+        type: primary
+        expr: session_id
+      - name: player
+        type: foreign
+        expr: player_id
+      - name: title
+        type: foreign
+        expr: title_id
+      - name: platform
+        type: foreign
+        expr: platform_id
+    dimensions:
+      - name: session_day
+        type: time
+        expr: session_date
+        type_params:
+          time_granularity: day
+      - name: registration_cohort_month
+        type: time
+        expr: registration_cohort_month
+        type_params:
+          time_granularity: month
+      - name: is_valid_session
+        type: categorical
+      - name: week_offset_from_registration
+        type: categorical
+      - name: network_type
+        type: categorical
+    measures:
+      - name: session_count
+        description: Number of play sessions.
+        agg: count
+        expr: session_id
+      - name: active_players
+        description: Distinct active players.
+        agg: count_distinct
+        expr: player_id
+      - name: valid_session_count
+        description: Sessions excluding crashes and idle outliers.
+        agg: sum
+        expr: "case when is_valid_session then 1 else 0 end"
+      - name: play_minutes
+        description: Total valid play minutes.
+        agg: sum
+        expr: session_duration_minutes
+
+  # ------------------------------------------------------------------------------------
+  - name: transactions
+    description: Monetization semantic model over the transaction fact.
+    model: ref('fct_transactions')
+    defaults:
+      agg_time_dimension: transaction_day
+    entities:
+      - name: transaction
+        type: primary
+        expr: transaction_id
+      - name: player
+        type: foreign
+        expr: player_id
+      - name: title
+        type: foreign
+        expr: title_id
+      - name: platform
+        type: foreign
+        expr: platform_id
+    dimensions:
+      - name: transaction_day
+        type: time
+        expr: transaction_date
+        type_params:
+          time_granularity: day
+      - name: transaction_type
+        type: categorical
+      - name: revenue_stream_group
+        type: categorical
+    measures:
+      - name: net_revenue
+        description: Net revenue in USD (refunds/chargebacks are negative).
+        agg: sum
+        expr: net_amount_usd
+      - name: studio_net_revenue
+        description: Net revenue after storefront fees.
+        agg: sum
+        expr: studio_net_revenue_usd
+      - name: gross_revenue
+        description: Gross transaction amount in USD.
+        agg: sum
+        expr: gross_amount_usd
+      - name: paying_players
+        description: Distinct players with positive net spend.
+        agg: count_distinct
+        expr: "case when net_amount_usd > 0 then player_id end"

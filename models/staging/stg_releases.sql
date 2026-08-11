@@ -1,0 +1,21 @@
+with source as (
+    select * from {{ ref('raw_releases') }}
+),
+
+renamed as (
+    select
+        release_id,
+        title_id,
+        app_version,
+        cast(released_at as timestamp_ntz)   as released_at,
+        release_type,
+        trim(release_notes)                  as release_notes,
+        cast(dev_days_estimated as integer)  as dev_days_estimated,
+        cast(dev_days_actual as integer)     as dev_days_actual,
+        cast(qa_bug_count as integer)        as qa_bug_count,
+        cast(is_rollback as boolean)         as is_rollback,
+        cast(_loaded_at as timestamp_ntz)    as loaded_at
+    from source
+)
+
+select * from renamed

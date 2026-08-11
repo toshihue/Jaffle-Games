@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: int_transactions
+    description: >
+      Transaction-grain business logic: signed net amounts (refunds/chargebacks negated),
+      studio net revenue after storefront fees, and a revenue-stream classification. Reused
+      by fct_transactions and every finance/monetization mart so sign and stream logic agree.
+
+  - name: int_play_sessions_enriched
+    description: >
+      Session-grain enrichment: duration in minutes, a validity flag excluding idle outliers
+      and null-end crashes, the release in effect at session time, the registration cohort
+      month, and the week offset from registration used for retention.
+
+  - name: int_player_spend
+    description: >
+      Per-player monetization rollup. Derives payer_segment from lifetime live-service spend
+      (iap + season_pass, net of reversals) and reports lifetime net revenue across all streams.
+
+  - name: int_player_activity
+    description: >
+      Per-player engagement rollup: lifetime and valid session counts, play minutes, first and
+      last session, favorite title and primary platform.
+
+  - name: int_title_activity
+    description: >
+      Per-title engagement and reception rollup: lifetime sessions/players, recency windows
+      (60/90 day) against the analysis date, days since last session, and review aggregates.
