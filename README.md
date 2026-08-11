@@ -1,5 +1,4 @@
 # Jaffle-Games
-# Jaffle Games — analytics
 
 A dbt project for **Jaffle Games**, a ~180-person studio that ships and
 operates live-service games. It models engagement, monetization, retention and release health
