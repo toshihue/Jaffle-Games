@@ -38,7 +38,8 @@ models:
         description: Title the SKU belongs to.
         data_type: varchar
         data_tests:
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: title_name
         description: Name of the title the SKU belongs to, denormalized for convenience.
         data_type: varchar
@@ -49,7 +50,10 @@ models:
         description: Item type — cosmetic, currency_pack, expansion or battle_pass.
         data_type: varchar
         data_tests:
-          - accepted_values: { values: ['cosmetic', 'currency_pack', 'expansion', 'battle_pass'] }
+          - accepted_values:
+              arguments:
+                values: ['cosmetic', 'currency_pack', 'expansion', 'battle_pass']
+
       - name: price_usd
         description: Current list price of the item in USD.
         data_type: number(12,2)

@@ -15,7 +15,9 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              values: ['pc', 'console', 'mobile']
+              arguments:
+                values: ['pc', 'console', 'mobile']
+
       - name: storefront_fee_rate
         description: Fraction of gross revenue retained by the storefront.
         data_tests:
