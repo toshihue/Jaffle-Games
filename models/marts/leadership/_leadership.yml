@@ -8,13 +8,15 @@ models:
       thin cells are not read as signal. Traces to leadership (invest / sunset decisions).
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [title_id, activity_month]
+          arguments:
+            combination_of_columns: [title_id, activity_month]
     columns:
       - name: title_id
         description: Title the row summarizes.
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: title_name
         description: Player-facing title name.
       - name: monetization_model
@@ -66,7 +68,8 @@ models:
       leadership.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [activity_month]
+          arguments:
+            combination_of_columns: [activity_month]
     columns:
       - name: activity_month
         description: Month summarized (first of month).

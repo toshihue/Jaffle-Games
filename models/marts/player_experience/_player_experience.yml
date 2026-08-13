@@ -9,7 +9,8 @@ models:
       experience (where cohorts drop off) and the organic-vs-paid_social quality story.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [registration_cohort_month, acquisition_channel, week_offset]
+          arguments:
+            combination_of_columns: [registration_cohort_month, acquisition_channel, week_offset]
     columns:
       - name: registration_cohort_month
         description: Month the cohort registered.
@@ -18,7 +19,8 @@ models:
         description: Acquisition channel slice of the cohort.
         data_tests:
           - accepted_values:
-              values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
+              arguments:
+                values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
       - name: week_offset
         description: Whole weeks since registration (0 = registration week).
         data_tests: [not_null]
@@ -40,17 +42,20 @@ models:
       excluded from standings but counted in flagged_submissions for anti-cheat visibility.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [player_id, leaderboard_id]
+          arguments:
+            combination_of_columns: [player_id, leaderboard_id]
     columns:
       - name: player_id
         description: Player the standing belongs to.
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_players'), field: player_id }
+          - relationships:
+              arguments: { to: ref('dim_players'), field: player_id }
       - name: title_id
         description: Title the leaderboard belongs to.
         data_tests:
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: leaderboard_id
         description: Leaderboard the standing is on.
         data_tests: [not_null]
