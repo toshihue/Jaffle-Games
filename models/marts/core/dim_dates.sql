@@ -1,28 +1,34 @@
--- Date spine covering the 12-month history window plus 90 days forward, so marts can join
+-- Date spine covering the 12-month history window plus 90 days forward, so marts can
+-- join
 -- to a complete calendar (including months/weeks with zero activity). Bounds come from
 -- project vars — no hardcoded dates in the model body.
-
-with spine as (
-    {{ dbt_utils.date_spine(
-        datepart="day",
-        start_date="cast('" ~ var('window_start_date') ~ "' as date)",
-        end_date="cast('" ~ var('date_spine_end_date') ~ "' as date)"
-    ) }}
-)
+with
+    spine as (
+        {{
+            dbt_utils.date_spine(
+                datepart="day",
+                start_date="cast('" ~ var("window_start_date") ~ "' as date)",
+                end_date="cast('" ~ var("date_spine_end_date") ~ "' as date)",
+            )
+        }}
+    )
 
 select
-    cast(date_day as date)                                  as date_day,
-    extract(year    from date_day)::integer                 as year_number,
-    extract(quarter from date_day)::integer                 as quarter_number,
-    extract(month   from date_day)::integer                 as month_number,
-    monthname(date_day)::varchar                            as month_name,
-    extract(day     from date_day)::integer                 as day_of_month,
-    dayofweekiso(date_day)::integer                         as day_of_week_iso,
-    dayname(date_day)::varchar                              as day_name,
-    (dayofweekiso(date_day) in (6, 7))::boolean             as is_weekend,
-    cast(date_trunc('week',    date_day) as date)           as week_start_date,
-    cast(date_trunc('month',   date_day) as date)           as month_start_date,
-    cast(date_trunc('quarter', date_day) as date)           as quarter_start_date,
-    (date_day between cast('{{ var("window_start_date") }}' as date)
-                  and cast('{{ var("window_end_date") }}' as date))::boolean as is_within_history_window
+    cast(date_day as date) as date_day,
+    extract(year from date_day)::integer as year_number,
+    extract(quarter from date_day)::integer as quarter_number,
+    extract(month from date_day)::integer as month_number,
+    monthname(date_day)::varchar as month_name,
+    extract(day from date_day)::integer as day_of_month,
+    dayofweekiso(date_day)::integer as day_of_week_iso,
+    dayname(date_day)::varchar as day_name,
+    (dayofweekiso(date_day) in (6, 7))::boolean as is_weekend,
+    cast(date_trunc('week', date_day) as date) as week_start_date,
+    cast(date_trunc('month', date_day) as date) as month_start_date,
+    cast(date_trunc('quarter', date_day) as date) as quarter_start_date,
+    (
+        date_day between cast('{{ var("window_start_date") }}' as date) and cast(
+            '{{ var("window_end_date") }}' as date
+        )
+    )::boolean as is_within_history_window
 from spine
