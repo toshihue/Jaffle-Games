@@ -8,18 +8,21 @@ models:
       regressed_release flag. Surfaces the engineered bad major and its rollback.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [release_id]
+          arguments:
+            combination_of_columns: [release_id]
     columns:
       - name: release_id
         description: Release summarized.
         data_tests:
           - not_null
           - unique
-          - relationships: { to: ref('fct_releases'), field: release_id }
+          - relationships:
+              arguments: { to: ref('fct_releases'), field: release_id }
       - name: title_id
         description: Title the release shipped for.
         data_tests:
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: title_name
         description: Player-facing title name.
       - name: lifecycle_stage

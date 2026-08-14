@@ -15,7 +15,9 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              values: ['pc', 'console', 'mobile']
+              arguments:
+                values: ['pc', 'console', 'mobile']
+
       - name: storefront_fee_rate
         description: Fraction of gross revenue retained by the storefront.
         data_tests:
@@ -38,7 +40,8 @@ models:
         description: premium, f2p, or premium_plus_dlc.
         data_tests:
           - accepted_values:
-              values: ['premium', 'f2p', 'premium_plus_dlc']
+              arguments:
+                values: ['premium', 'f2p', 'premium_plus_dlc']
       - name: launch_date
         description: Worldwide launch date.
         data_tests:
@@ -57,22 +60,25 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_titles')
-              field: title_id
+              arguments:
+                to: ref('stg_titles')
+                field: title_id
       - name: platform_id
         description: Foreign key to stg_platforms.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_platforms')
-              field: platform_id
+              arguments:
+                to: ref('stg_platforms')
+                field: platform_id
       - name: platform_launch_date
         description: Per-platform launch date.
         data_tests:
           - not_null
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [title_id, platform_id]
+          arguments:
+            combination_of_columns: [title_id, platform_id]
 
   # ------------------------------------------------------------------------------------
   - name: stg_skus
@@ -88,13 +94,15 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_titles')
-              field: title_id
+              arguments:
+                to: ref('stg_titles')
+                field: title_id
       - name: sku_category
         description: cosmetic, currency_pack, expansion, or battle_pass.
         data_tests:
           - accepted_values:
-              values: ['cosmetic', 'currency_pack', 'expansion', 'battle_pass']
+              arguments:
+                values: ['cosmetic', 'currency_pack', 'expansion', 'battle_pass']
       - name: price_usd
         description: SKU list price in USD.
         data_tests:
@@ -119,18 +127,21 @@ models:
         description: Normalized acquisition channel.
         data_tests:
           - accepted_values:
-              values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
+              arguments:
+                values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
       - name: account_status
         description: active, dormant, churned, or banned.
         data_tests:
           - accepted_values:
-              values: ['active', 'dormant', 'churned', 'banned']
+              arguments:
+                values: ['active', 'dormant', 'churned', 'banned']
       - name: acquisition_campaign_id
         description: Campaign that acquired the player, if paid. Nullable.
         data_tests:
           - relationships:
-              to: ref('stg_marketing_spend')
-              field: campaign_id
+              arguments:
+                to: ref('stg_marketing_spend')
+                field: campaign_id
               config:
                 where: "acquisition_campaign_id is not null"
 
@@ -148,13 +159,15 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_titles')
-              field: title_id
+              arguments:
+                to: ref('stg_titles')
+                field: title_id
       - name: release_type
         description: major, minor, hotfix, content_drop, or event.
         data_tests:
           - accepted_values:
-              values: ['major', 'minor', 'hotfix', 'content_drop', 'event']
+              arguments:
+                values: ['major', 'minor', 'hotfix', 'content_drop', 'event']
       - name: released_at
         description: Release timestamp (UTC).
         data_tests:
@@ -177,27 +190,31 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_players')
-              field: player_id
+              arguments:
+                to: ref('stg_players')
+                field: player_id
       - name: title_id
         description: Foreign key to stg_titles.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_titles')
-              field: title_id
+              arguments:
+                to: ref('stg_titles')
+                field: title_id
       - name: platform_id
         description: Foreign key to stg_platforms.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_platforms')
-              field: platform_id
+              arguments:
+                to: ref('stg_platforms')
+                field: platform_id
       - name: network_type
         description: Network the session used.
         data_tests:
           - accepted_values:
-              values: ['wifi', 'cellular', 'ethernet']
+              arguments:
+                values: ['wifi', 'cellular', 'ethernet']
       - name: session_start_at
         description: Session start (UTC).
         data_tests:
@@ -220,21 +237,24 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_players')
-              field: player_id
+              arguments:
+                to: ref('stg_players')
+                field: player_id
       - name: title_id
         description: Foreign key to stg_titles.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_titles')
-              field: title_id
+              arguments:
+                to: ref('stg_titles')
+                field: title_id
       - name: sku_id
         description: Foreign key to stg_skus. Null for premium (base-game) purchases.
         data_tests:
           - relationships:
-              to: ref('stg_skus')
-              field: sku_id
+              arguments:
+                to: ref('stg_skus')
+                field: sku_id
               config:
                 where: "sku_id is not null"
       - name: transaction_type
@@ -242,12 +262,15 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              values: ['premium_purchase', 'iap', 'season_pass', 'dlc', 'refund', 'chargeback']
+              arguments:
+                values: ['premium_purchase', 'iap', 'season_pass', 'dlc', 'refund', 'chargeback']
       - name: payment_method
         description: Payment instrument used.
         data_tests:
           - accepted_values:
-              values: ['card', 'paypal', 'apple_pay', 'google_play', 'platform_wallet']
+              arguments:
+                values: ['card', 'paypal', 'apple_pay', 'google_play', 'platform_wallet']
+
       - name: gross_amount_usd
         description: Gross amount in USD (positive).
         data_tests:
@@ -259,23 +282,23 @@ models:
     columns:
       - name: score_id
         description: Submission primary key.
-        data_tests:
-          - unique
-          - not_null
+        data_tests: [unique, not_null]
       - name: player_id
         description: Foreign key to stg_players.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_players')
-              field: player_id
+              arguments:
+                to: ref('stg_players')
+                field: player_id
       - name: title_id
         description: Foreign key to stg_titles.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_titles')
-              field: title_id
+              arguments:
+                to: ref('stg_titles')
+                field: title_id
 
   # ------------------------------------------------------------------------------------
   - name: stg_reviews
@@ -283,30 +306,31 @@ models:
     columns:
       - name: review_id
         description: Review primary key.
-        data_tests:
-          - unique
-          - not_null
+        data_tests: [unique, not_null]
       - name: player_id
         description: Foreign key to stg_players.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_players')
-              field: player_id
+              arguments:
+                to: ref('stg_players')
+                field: player_id
       - name: title_id
         description: Foreign key to stg_titles.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_titles')
-              field: title_id
+              arguments:
+                to: ref('stg_titles')
+                field: title_id
       - name: rating
         description: Star rating, 1-5.
         data_tests:
           - not_null
           - accepted_values:
-              values: [1, 2, 3, 4, 5]
-              quote: false
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
 
   # ------------------------------------------------------------------------------------
   - name: stg_marketing_spend
@@ -314,24 +338,25 @@ models:
     columns:
       - name: campaign_id
         description: Campaign identifier (not unique — one row per campaign-week).
-        data_tests:
-          - not_null
+        data_tests: [not_null]
       - name: title_id
         description: Foreign key to stg_titles.
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_titles')
-              field: title_id
+              arguments:
+                to: ref('stg_titles')
+                field: title_id
       - name: channel
         description: Paid acquisition channel.
         data_tests:
           - accepted_values:
-              values: ['paid_social', 'influencer', 'store_featured', 'cross_promo']
+              arguments:
+                values: ['paid_social', 'influencer', 'store_featured', 'cross_promo']
       - name: week_start_date
         description: Monday-anchored spend week.
-        data_tests:
-          - not_null
+        data_tests: [not_null]
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [campaign_id, week_start_date]
+          arguments:
+            combination_of_columns: [campaign_id, week_start_date]

@@ -38,7 +38,8 @@ models:
         description: Title the SKU belongs to.
         data_type: varchar
         data_tests:
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: title_name
         description: Name of the title the SKU belongs to, denormalized for convenience.
         data_type: varchar
@@ -49,7 +50,10 @@ models:
         description: Item type — cosmetic, currency_pack, expansion or battle_pass.
         data_type: varchar
         data_tests:
-          - accepted_values: { values: ['cosmetic', 'currency_pack', 'expansion', 'battle_pass'] }
+          - accepted_values:
+              arguments:
+                values: ['cosmetic', 'currency_pack', 'expansion', 'battle_pass']
+
       - name: price_usd
         description: Current list price of the item in USD.
         data_type: number(12,2)
@@ -140,7 +144,10 @@ models:
         description: How the title earns — premium, f2p, or premium_plus_dlc.
         data_type: varchar
         data_tests:
-          - accepted_values: { values: ['premium', 'f2p', 'premium_plus_dlc'] }
+          - accepted_values:
+              arguments:
+                values: ['premium', 'f2p', 'premium_plus_dlc']
+
       - name: is_live_service
         description: Whether the title is operated as an ongoing live-service game.
         data_type: boolean
@@ -178,7 +185,9 @@ models:
         data_type: varchar
         data_tests:
           - accepted_values:
-              values: ['launch_window', 'growth', 'mature', 'declining', 'sunset_candidate']
+              arguments:
+                values: ['launch_window', 'growth', 'mature', 'declining', 'sunset_candidate']
+
       - name: lifetime_sessions
         description: All sessions ever recorded for the title in the history window.
         data_type: integer
@@ -243,7 +252,8 @@ models:
         data_type: varchar
         data_tests:
           - accepted_values:
-              values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
+              arguments:
+                values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
       - name: acquisition_campaign_id
         description: Paid campaign that acquired the player, if any.
         data_type: varchar
@@ -260,7 +270,9 @@ models:
         description: Source-system account state — active, dormant, churned or banned.
         data_type: varchar
         data_tests:
-          - accepted_values: { values: ['active', 'dormant', 'churned', 'banned'] }
+          - accepted_values:
+              arguments:
+                values: ['active', 'dormant', 'churned', 'banned']
       - name: last_login_at
         description: Most recent login timestamp (UTC).
         data_type: timestamp_ntz
@@ -290,8 +302,9 @@ models:
         data_type: varchar
         data_tests:
           - relationships:
-              to: ref('dim_titles')
-              field: title_id
+              arguments:
+                to: ref('dim_titles')
+                field: title_id
               config: { where: "favorite_title_id is not null" }
       - name: favorite_title_name
         description: Name of the player's most-played title.
@@ -301,8 +314,9 @@ models:
         data_type: varchar
         data_tests:
           - relationships:
-              to: ref('dim_platforms')
-              field: platform_id
+              arguments:
+                to: ref('dim_platforms')
+                field: platform_id
               config: { where: "primary_platform_id is not null" }
       - name: live_service_net_usd
         description: Lifetime live-service spend (iap + season_pass, net of reversals) — the basis for payer_segment.
@@ -319,7 +333,10 @@ models:
           season_pass spend. A non_payer may still have bought a premium title or DLC.
         data_type: varchar
         data_tests:
-          - accepted_values: { values: ['whale', 'dolphin', 'minnow', 'non_payer'] }
+          - accepted_values:
+              arguments:
+                values: ['whale', 'dolphin', 'minnow', 'non_payer']
+
       - name: is_payer
         description: True if the player has any lifetime live-service spend.
         data_type: boolean
@@ -353,27 +370,32 @@ models:
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_players'), field: player_id }
+          - relationships:
+              arguments: { to: ref('dim_players'), field: player_id }
       - name: title_id
         description: Title played.
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: platform_id
         description: Storefront the session ran on.
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_platforms'), field: platform_id }
+          - relationships:
+              arguments: { to: ref('dim_platforms'), field: platform_id }
       - name: release_id_in_effect
         description: The release live for this title at session start (null if before any release).
         data_type: varchar
         data_tests:
           - relationships:
-              to: ref('fct_releases')
-              field: release_id
+              arguments:
+                to: ref('fct_releases')
+                field: release_id
               config: { where: "release_id_in_effect is not null" }
+
       - name: session_start_at
         description: Session start (UTC).
         data_type: timestamp_ntz
@@ -449,26 +471,30 @@ models:
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_players'), field: player_id }
+          - relationships:
+              arguments: { to: ref('dim_players'), field: player_id }
       - name: title_id
         description: Title the transaction is attributed to.
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: platform_id
         description: Storefront the transaction cleared on.
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_platforms'), field: platform_id }
+          - relationships:
+              arguments: { to: ref('dim_platforms'), field: platform_id }
       - name: sku_id
         description: SKU purchased; null for premium (base-game) purchases.
         data_type: varchar
         data_tests:
           - relationships:
-              to: ref('dim_skus')
-              field: sku_id
+              arguments:
+                to: ref('dim_skus')
+                field: sku_id
               config: { where: "sku_id is not null" }
       - name: transaction_at
         description: Transaction timestamp in UTC (converted from America/New_York).
@@ -488,12 +514,16 @@ models:
         data_type: varchar
         data_tests:
           - accepted_values:
-              values: ['premium_purchase', 'iap', 'season_pass', 'dlc', 'refund', 'chargeback']
+              arguments:
+                values: ['premium_purchase', 'iap', 'season_pass', 'dlc', 'refund', 'chargeback']
       - name: revenue_stream_group
         description: Grouped stream — live_service, catalog or reversal — for stream-level finance cuts.
         data_type: varchar
         data_tests:
-          - accepted_values: { values: ['live_service', 'catalog', 'reversal'] }
+          - accepted_values:
+              arguments:
+                values: ['live_service', 'catalog', 'reversal']
+
       - name: is_live_service_revenue
         description: True for iap/season_pass and their reversals — the live-service revenue base.
         data_type: boolean
@@ -538,13 +568,15 @@ models:
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_players'), field: player_id }
+          - relationships:
+              arguments: { to: ref('dim_players'), field: player_id }
       - name: title_id
         description: Title the leaderboard belongs to.
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: leaderboard_id
         description: Leaderboard the score was submitted to.
         data_type: varchar
@@ -590,7 +622,8 @@ models:
         data_type: varchar
         data_tests:
           - not_null
-          - relationships: { to: ref('dim_titles'), field: title_id }
+          - relationships:
+              arguments: { to: ref('dim_titles'), field: title_id }
       - name: app_version
         description: Semantic version shipped.
         data_type: varchar
@@ -604,7 +637,10 @@ models:
         description: major, minor, hotfix, content_drop or event.
         data_type: varchar
         data_tests:
-          - accepted_values: { values: ['major', 'minor', 'hotfix', 'content_drop', 'event'] }
+          - accepted_values:
+              arguments:
+                values: ['major', 'minor', 'hotfix', 'content_drop', 'event']
+
       - name: is_rollback
         description: True if the release rolled back a prior one.
         data_type: boolean
