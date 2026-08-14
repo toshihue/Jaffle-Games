@@ -1,13 +1,13 @@
-with source as (
-    select * from {{ ref('raw_platforms') }}
-),
+with
+    source as (select * from {{ ref("raw_platforms") }}),
 
-renamed as (
-    select
-        platform                         as platform_id,
-        platform_family,
-        cast(storefront_fee_rate as number(4,3)) as storefront_fee_rate
-    from source
-)
+    renamed as (
+        select
+            platform as platform_id,
+            platform_family,
+            cast(storefront_fee_rate as number(4, 3)) as storefront_fee_rate
+        from source
+    )
 
-select * from renamed
+select *
+from renamed
