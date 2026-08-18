@@ -694,3 +694,24 @@ models:
           True when the release cut sessions or raised the crash rate by more than 5 points —
           the flag that surfaces regressions like the engineered Engine 5 major.
         data_type: boolean
+
+unit_tests:
+  - name: test_fct_high_scores_excludes_flagged_cheaters_from_rank
+    description: >
+      Cheat-flagged submissions are retained in the output but excluded from
+      leaderboard_rank/score_percentile — ranks and percentiles are computed only among
+      legitimate rows on each leaderboard.
+    model: fct_high_scores
+    given:
+      - input: ref('stg_high_scores')
+        rows:
+          - {score_id: s1, player_id: p1, title_id: t1, leaderboard_id: lb1, score_value: 100, submitted_at: "2026-01-01 00:00:00", is_verified: true, flagged_for_cheating: false}
+          - {score_id: s2, player_id: p2, title_id: t1, leaderboard_id: lb1, score_value: 90,  submitted_at: "2026-01-01 00:00:00", is_verified: true, flagged_for_cheating: false}
+          - {score_id: s3, player_id: p3, title_id: t1, leaderboard_id: lb1, score_value: 200, submitted_at: "2026-01-01 00:00:00", is_verified: true, flagged_for_cheating: true}
+          - {score_id: s4, player_id: p4, title_id: t1, leaderboard_id: lb1, score_value: 80,  submitted_at: "2026-01-01 00:00:00", is_verified: true, flagged_for_cheating: false}
+    expect:
+      rows:
+        - {score_id: s1, leaderboard_rank: 1,    score_percentile: 1.0}
+        - {score_id: s2, leaderboard_rank: 2,    score_percentile: 0.5}
+        - {score_id: s3, leaderboard_rank: null, score_percentile: null}
+        - {score_id: s4, leaderboard_rank: 3,    score_percentile: 0.0}
