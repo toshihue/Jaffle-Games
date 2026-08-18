@@ -12,6 +12,7 @@ with
             cast(transaction_at as timestamp_ntz) as transaction_at_local,
             transaction_type,
             cast(gross_amount_usd as number(12, 2)) as gross_amount_usd,
+            gross_amount_usd::number(12, 2) * -1 as gross_amount_usd_signed,
             cast(platform_fee_usd as number(12, 2)) as platform_fee_usd,
             currency_code,
             cast(local_amount as number(14, 2)) as local_amount,
