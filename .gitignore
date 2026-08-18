@@ -1,0 +1,5 @@
+dbt_packages/
+target/
+.github/
+logs/
+dbt_internal_packages/

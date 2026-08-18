@@ -13,7 +13,7 @@ models:
       - name: platform_id
         description: Storefront identifier (primary key).
         data_type: varchar
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: platform_family
         description: Whether the storefront is pc, console or mobile — the level most portfolio cuts use.
@@ -32,14 +32,14 @@ models:
       - name: sku_id
         description: SKU identifier (primary key).
         data_type: varchar
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: title_id
         description: Title the SKU belongs to.
         data_type: varchar
         data_tests:
           - relationships:
-              arguments: { to: ref('dim_titles'), field: title_id }
+              arguments: {to: ref('dim_titles'), field: title_id}
       - name: title_name
         description: Name of the title the SKU belongs to, denormalized for convenience.
         data_type: varchar
@@ -76,7 +76,7 @@ models:
       - name: date_day
         description: Calendar day (primary key).
         data_type: date
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: year_number
         description: Calendar year.
@@ -128,7 +128,7 @@ models:
       - name: title_id
         description: Title identifier (primary key).
         data_type: varchar
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: title_name
         description: Player-facing title name.
@@ -232,7 +232,7 @@ models:
       - name: player_id
         description: Player identifier (primary key).
         data_type: varchar
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: registered_at
         description: Account registration timestamp (UTC).
@@ -305,7 +305,7 @@ models:
               arguments:
                 to: ref('dim_titles')
                 field: title_id
-              config: { where: "favorite_title_id is not null" }
+              config: {where: "favorite_title_id is not null"}
       - name: favorite_title_name
         description: Name of the player's most-played title.
         data_type: varchar
@@ -317,7 +317,7 @@ models:
               arguments:
                 to: ref('dim_platforms')
                 field: platform_id
-              config: { where: "primary_platform_id is not null" }
+              config: {where: "primary_platform_id is not null"}
       - name: live_service_net_usd
         description: Lifetime live-service spend (iap + season_pass, net of reversals) — the basis for payer_segment.
         data_type: number(12,2)
@@ -356,6 +356,7 @@ models:
     description: >
       One row per play session. The central engagement fact: duration, validity, the release
       in effect at session time, and the week offset from registration for retention.
+      Engagement semantic model over the session fact.
     config:
       contract:
         enforced: true
@@ -363,29 +364,41 @@ models:
       - name: session_id
         description: Session identifier (primary key; deduplicated upstream).
         data_type: varchar
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
+        entity:
+          type: primary
+          name: session
       - name: player_id
         description: Player who played the session.
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_players'), field: player_id }
+              arguments: {to: ref('dim_players'), field: player_id}
+        entity:
+          type: foreign
+          name: player
       - name: title_id
         description: Title played.
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_titles'), field: title_id }
+              arguments: {to: ref('dim_titles'), field: title_id}
+        entity:
+          type: foreign
+          name: title
       - name: platform_id
         description: Storefront the session ran on.
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_platforms'), field: platform_id }
+              arguments: {to: ref('dim_platforms'), field: platform_id}
+        entity:
+          type: foreign
+          name: platform
       - name: release_id_in_effect
         description: The release live for this title at session start (null if before any release).
         data_type: varchar
@@ -394,7 +407,7 @@ models:
               arguments:
                 to: ref('fct_releases')
                 field: release_id
-              config: { where: "release_id_in_effect is not null" }
+              config: {where: "release_id_in_effect is not null"}
 
       - name: session_start_at
         description: Session start (UTC).
@@ -406,6 +419,10 @@ models:
       - name: session_date
         description: Calendar date of the session start.
         data_type: date
+        dimension:
+          type: time
+          name: session_day
+        granularity: day
       - name: session_month
         description: Month of the session — the grain for monthly engagement marts.
         data_type: date
@@ -421,6 +438,8 @@ models:
       - name: is_valid_session
         description: True for clean sessions used in engagement metrics — excludes crashes and idle outliers.
         data_type: boolean
+        dimension:
+          type: categorical
       - name: levels_completed
         description: Levels or matches completed in the session.
         data_type: integer
@@ -430,6 +449,8 @@ models:
       - name: network_type
         description: Network used — wifi, cellular or ethernet.
         data_type: varchar
+        dimension:
+          type: categorical
       - name: device_model
         description: Device or hardware model.
         data_type: varchar
@@ -445,18 +466,72 @@ models:
       - name: registration_cohort_month
         description: Registration cohort month of the player — carried for cohort-sliced engagement.
         data_type: date
+        dimension:
+          type: time
+        granularity: month
       - name: week_offset_from_registration
         description: Whole weeks between registration and the session (0 = registration week).
         data_type: integer
+        dimension:
+          type: categorical
       - name: is_weekend_session
         description: True when the session started on a Saturday or Sunday.
         data_type: boolean
+    semantic_model:
+      enabled: true
+      name: fct_play_sessions
+    agg_time_dimension: session_day
+    metrics:
+      - name: monthly_active_players
+        label: Monthly active players
+        description: Distinct players active in a period (query at the month grain for MAP).
+        type: simple
+        agg: count_distinct
+        expr: player_id
+      - name: cohort_players
+        label: Cohort players
+        description: Distinct players (the retention denominator).
+        type: simple
+        agg: count_distinct
+        expr: player_id
+      - name: week4_returned_players
+        label: Week-4 returned players
+        description: Distinct players active in their fourth week after registration.
+        type: simple
+        filter: "{{ Dimension('session__week_offset_from_registration') }} = 4"
+        agg: count_distinct
+        expr: player_id
+      - name: session_count
+        description: Number of play sessions.
+        agg: count
+        expr: session_id
+        type: simple
+        hidden: true
+      - name: valid_session_count
+        description: Sessions excluding crashes and idle outliers.
+        agg: sum
+        expr: "case when is_valid_session then 1 else 0 end"
+        type: simple
+        hidden: true
+      - name: play_minutes
+        description: Total valid play minutes.
+        agg: sum
+        expr: session_duration_minutes
+        type: simple
+        hidden: true
+      - name: week_4_retention
+        label: Week-4 retention
+        description: Players active in week 4 after registration over all players.
+        type: ratio
+        numerator: week4_returned_players
+        denominator: cohort_players
 
   # ------------------------------------------------------------------------------------
   - name: fct_transactions
-    description: >
+    description: >-
       One row per transaction with signed net amounts and studio net revenue. Refunds and
       chargebacks are negative here (they arrive positive in source). transaction_at is UTC.
+      Monetization semantic model over the transaction fact.
     config:
       contract:
         enforced: true
@@ -464,29 +539,41 @@ models:
       - name: transaction_id
         description: Transaction identifier (primary key).
         data_type: varchar
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
+        entity:
+          type: primary
+          name: transaction
       - name: player_id
         description: Player who transacted.
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_players'), field: player_id }
+              arguments: {to: ref('dim_players'), field: player_id}
+        entity:
+          type: foreign
+          name: player
       - name: title_id
         description: Title the transaction is attributed to.
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_titles'), field: title_id }
+              arguments: {to: ref('dim_titles'), field: title_id}
+        entity:
+          type: foreign
+          name: title
       - name: platform_id
         description: Storefront the transaction cleared on.
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_platforms'), field: platform_id }
+              arguments: {to: ref('dim_platforms'), field: platform_id}
+        entity:
+          type: foreign
+          name: platform
       - name: sku_id
         description: SKU purchased; null for premium (base-game) purchases.
         data_type: varchar
@@ -495,7 +582,7 @@ models:
               arguments:
                 to: ref('dim_skus')
                 field: sku_id
-              config: { where: "sku_id is not null" }
+              config: {where: "sku_id is not null"}
       - name: transaction_at
         description: Transaction timestamp in UTC (converted from America/New_York).
         data_type: timestamp_ntz
@@ -506,6 +593,10 @@ models:
       - name: transaction_date
         description: Calendar date of the transaction (UTC).
         data_type: date
+        dimension:
+          type: time
+          name: transaction_day
+        granularity: day
       - name: transaction_month
         description: Month of the transaction — the grain for monthly revenue marts.
         data_type: date
@@ -516,6 +607,8 @@ models:
           - accepted_values:
               arguments:
                 values: ['premium_purchase', 'iap', 'season_pass', 'dlc', 'refund', 'chargeback']
+        dimension:
+          type: categorical
       - name: revenue_stream_group
         description: Grouped stream — live_service, catalog or reversal — for stream-level finance cuts.
         data_type: varchar
@@ -523,6 +616,8 @@ models:
           - accepted_values:
               arguments:
                 values: ['live_service', 'catalog', 'reversal']
+        dimension:
+          type: categorical
 
       - name: is_live_service_revenue
         description: True for iap/season_pass and their reversals — the live-service revenue base.
@@ -548,8 +643,41 @@ models:
       - name: studio_net_revenue_usd
         description: Signed revenue net of storefront fees — the studio's recognized take.
         data_type: number(12,2)
-
-  # ------------------------------------------------------------------------------------
+    semantic_model:
+      enabled: true
+      name: fct_transactions
+    agg_time_dimension: transaction_day
+    metrics:
+      - name: net_revenue
+        label: Net revenue (USD)
+        description: Net revenue across all streams, refunds and chargebacks netted out.
+        type: simple
+        agg: sum
+        expr: net_amount_usd
+      - name: paying_players
+        label: Paying players
+        description: Distinct players with positive net spend.
+        type: simple
+        agg: count_distinct
+        expr: "case when net_amount_usd > 0 then player_id end"
+      - name: studio_net_revenue
+        description: Net revenue after storefront fees.
+        agg: sum
+        expr: studio_net_revenue_usd
+        type: simple
+        hidden: true
+      - name: gross_revenue
+        description: Gross transaction amount in USD.
+        agg: sum
+        expr: gross_amount_usd
+        type: simple
+        hidden: true
+      - name: arppu
+        label: ARPPU (USD)
+        description: Average net revenue per paying player.
+        type: ratio
+        numerator: net_revenue
+        denominator: paying_players
   - name: fct_high_scores
     description: >
       One row per leaderboard submission. Cheat-flagged submissions are retained and counted
@@ -561,7 +689,7 @@ models:
       - name: score_id
         description: Submission identifier (primary key).
         data_type: varchar
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: player_id
         description: Player who submitted the score.
@@ -569,14 +697,14 @@ models:
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_players'), field: player_id }
+              arguments: {to: ref('dim_players'), field: player_id}
       - name: title_id
         description: Title the leaderboard belongs to.
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_titles'), field: title_id }
+              arguments: {to: ref('dim_titles'), field: title_id}
       - name: leaderboard_id
         description: Leaderboard the score was submitted to.
         data_type: varchar
@@ -615,7 +743,7 @@ models:
       - name: release_id
         description: Release identifier (primary key).
         data_type: varchar
-        constraints: [{ type: not_null }]
+        constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: title_id
         description: Title the release shipped for.
@@ -623,7 +751,7 @@ models:
         data_tests:
           - not_null
           - relationships:
-              arguments: { to: ref('dim_titles'), field: title_id }
+              arguments: {to: ref('dim_titles'), field: title_id}
       - name: app_version
         description: Semantic version shipped.
         data_type: varchar
@@ -694,3 +822,24 @@ models:
           True when the release cut sessions or raised the crash rate by more than 5 points —
           the flag that surfaces regressions like the engineered Engine 5 major.
         data_type: boolean
+
+unit_tests:
+  - name: test_fct_high_scores_excludes_flagged_cheaters_from_rank
+    description: >
+      Cheat-flagged submissions are retained in the output but excluded from
+      leaderboard_rank/score_percentile — ranks and percentiles are computed only among
+      legitimate rows on each leaderboard.
+    model: fct_high_scores
+    given:
+      - input: ref('stg_high_scores')
+        rows:
+          - {score_id: s1, player_id: p1, title_id: t1, leaderboard_id: lb1, score_value: 100, submitted_at: "2026-01-01 00:00:00", is_verified: true, flagged_for_cheating: false}
+          - {score_id: s2, player_id: p2, title_id: t1, leaderboard_id: lb1, score_value: 90, submitted_at: "2026-01-01 00:00:00", is_verified: true, flagged_for_cheating: false}
+          - {score_id: s3, player_id: p3, title_id: t1, leaderboard_id: lb1, score_value: 200, submitted_at: "2026-01-01 00:00:00", is_verified: true, flagged_for_cheating: true}
+          - {score_id: s4, player_id: p4, title_id: t1, leaderboard_id: lb1, score_value: 80, submitted_at: "2026-01-01 00:00:00", is_verified: true, flagged_for_cheating: false}
+    expect:
+      rows:
+        - {score_id: s1, leaderboard_rank: 1, score_percentile: 1.0}
+        - {score_id: s2, leaderboard_rank: 2, score_percentile: 0.5}
+        - {score_id: s3, leaderboard_rank: null, score_percentile: null}
+        - {score_id: s4, leaderboard_rank: 3, score_percentile: 0.0}
