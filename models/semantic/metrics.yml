@@ -1,62 +1,7 @@
 metrics:
-  - name: net_revenue
-    label: Net revenue (USD)
-    description: Net revenue across all streams, refunds and chargebacks netted out.
-    type: simple
-    type_params:
-      measure: net_revenue
-
-  - name: monthly_active_players
-    label: Monthly active players
-    description: Distinct players active in a period (query at the month grain for MAP).
-    type: simple
-    type_params:
-      measure: active_players
-
-  - name: paying_players
-    label: Paying players
-    description: Distinct players with positive net spend.
-    type: simple
-    type_params:
-      measure: paying_players
-
   - name: payer_conversion_rate
     label: Payer conversion rate
     description: Share of active players who are paying players.
     type: ratio
-    type_params:
-      numerator: paying_players
-      denominator: monthly_active_players
-
-  - name: arppu
-    label: ARPPU (USD)
-    description: Average net revenue per paying player.
-    type: ratio
-    type_params:
-      numerator: net_revenue
-      denominator: paying_players
-
-  # Week-4 retention, expressed as returned players over the cohort. Both inputs count
-  # distinct players; the numerator is filtered to the fourth week after registration.
-  - name: cohort_players
-    label: Cohort players
-    description: Distinct players (the retention denominator).
-    type: simple
-    type_params:
-      measure: active_players
-
-  - name: week4_returned_players
-    label: Week-4 returned players
-    description: Distinct players active in their fourth week after registration.
-    type: simple
-    type_params:
-      measure: active_players
-    filter: "{{ Dimension('session__week_offset_from_registration') }} = 4"
-
-  - name: week_4_retention
-    label: Week-4 retention
-    description: Players active in week 4 after registration over all players.
-    type: ratio
-    type_params:
-      numerator: week4_returned_players
-      denominator: cohort_players
+    numerator: paying_players
+    denominator: monthly_active_players
