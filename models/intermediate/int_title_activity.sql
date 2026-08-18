@@ -38,9 +38,9 @@ select
     session_rollup.last_session_at,
     session_rollup.sessions_last_60d,
     session_rollup.active_players_last_90d,
-    datediff('day', session_rollup.last_session_at, cast('{{ var("analysis_as_of_date") }}' as date)) as days_since_last_session,
     reviews.avg_review_rating,
     reviews.review_count,
-    reviews.recommend_rate
+    reviews.recommend_rate,
+    datediff('day', session_rollup.last_session_at, cast('{{ var("analysis_as_of_date") }}' as date)) as days_since_last_session
 from session_rollup
-left join reviews using (title_id)
+left join reviews on session_rollup.title_id = reviews.title_id

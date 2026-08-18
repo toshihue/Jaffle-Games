@@ -15,20 +15,22 @@ with
 
 select
     cast(date_day as date) as date_day,
-    cast(extract(yearfromdate_day) as integer) as year_number,
-    cast(extract(quarterfromdate_day) as integer) as quarter_number,
-    cast(extract(monthfromdate_day) as integer) as month_number,
+    cast(extract(year from date_day) as integer) as year_number,
+    cast(extract(quarter from date_day) as integer) as quarter_number,
+    cast(extract(month from date_day) as integer) as month_number,
     cast(monthname(date_day) as varchar) as month_name,
-    cast(extract(dayfromdate_day) as integer) as day_of_month,
+    cast(extract(day from date_day) as integer) as day_of_month,
     cast(dayofweekiso(date_day) as integer) as day_of_week_iso,
     cast(dayname(date_day) as varchar) as day_name,
     cast((dayofweekiso(date_day)in(6,7)) as boolean) as is_weekend,
     cast(date_trunc('week', date_day) as date) as week_start_date,
     cast(date_trunc('month', date_day) as date) as month_start_date,
     cast(date_trunc('quarter', date_day) as date) as quarter_start_date,
-    (
-        date_day between cast('{{ var("window_start_date") }}' as date) and cast(
-            '{{ var("window_end_date") }}' as date
-        )
-    )::boolean as is_within_history_window
+    cast(
+        (
+            date_day between cast('{{ var("window_start_date") }}' as date) and cast(
+                '{{ var("window_end_date") }}' as date
+            )
+        ) as boolean
+    ) as is_within_history_window
 from spine

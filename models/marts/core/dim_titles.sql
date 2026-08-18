@@ -37,8 +37,8 @@ with
                 cast('{{ var("analysis_as_of_date") }}' as date)
             ) as days_since_launch
         from titles
-        left join activity using (title_id)
-        left join platform_rollup using (title_id)
+        left join activity on titles.title_id = activity.title_id
+        left join platform_rollup on titles.title_id = platform_rollup.title_id
     )
 
 select
@@ -55,33 +55,36 @@ select
     cast(esrb_rating as varchar) as esrb_rating,
     cast(sunset_date as date) as sunset_date,
     cast(days_since_launch as integer) as days_since_launch,
-    cast(coalesce(platform_count,0) as integer) as platform_count,
     cast(earliest_platform_launch_date as date) as earliest_platform_launch_date,
-
-    -- Lifecycle stage. Order matters: launch first, then the sunset test, then
-    -- activity.
-    (
-        case
-            when days_since_launch <= 90
-            then 'launch_window'
-            when
-                coalesce(days_since_last_session, 9999) > 60 and days_since_launch > 365
-            then 'sunset_candidate'
-            when days_since_launch <= 365
-            then 'growth'
-            when
-                coalesce(active_players_last_90d, 0)
-                >= {{ var("min_active_players_threshold") }}
-            then 'mature'
-            else 'declining'
-        end
-    )::varchar as lifecycle_stage,
-
-    cast(coalesce(lifetime_sessions,0) as integer) as lifetime_sessions,
-    cast(coalesce(lifetime_players,0) as integer) as lifetime_players,
     cast(first_session_at as timestamp_ntz) as first_session_at,
     cast(last_session_at as timestamp_ntz) as last_session_at,
     cast(days_since_last_session as integer) as days_since_last_session,
+
+    cast(coalesce(platform_count,0) as integer) as platform_count,
+
+    -- Lifecycle stage. Order matters: launch first, then the sunset test, then
+    -- activity.
+    cast(
+        (
+            case
+                when days_since_launch <= 90
+                then 'launch_window'
+                when
+                    coalesce(days_since_last_session, 9999) > 60 and days_since_launch > 365
+                then 'sunset_candidate'
+                when days_since_launch <= 365
+                then 'growth'
+                when
+                    coalesce(active_players_last_90d, 0)
+                    >= {{ var("min_active_players_threshold") }}
+                then 'mature'
+                else 'declining'
+            end
+        ) as varchar
+    ) as lifecycle_stage,
+
+    cast(coalesce(lifetime_sessions,0) as integer) as lifetime_sessions,
+    cast(coalesce(lifetime_players,0) as integer) as lifetime_players,
     cast(coalesce(sessions_last_60d,0) as integer) as sessions_last_60d,
     cast(coalesce(active_players_last_90d,0) as integer) as active_players_last_90d,
     cast(round(avg_review_rating,2) as number(4,2)) as avg_review_rating,

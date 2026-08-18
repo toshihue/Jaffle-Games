@@ -38,8 +38,8 @@ joined as (
         on s.player_id = p.player_id
     -- Release in effect = the most recent release for this title on/before the session start.
     left join releases as r
-        on r.title_id = s.title_id
-       and r.released_at <= s.session_start_at
+        on s.title_id = r.title_id
+       and s.session_start_at >= r.released_at
     qualify row_number() over (
         partition by s.session_id
         order by r.released_at desc nulls last
@@ -54,12 +54,6 @@ select
     session_start_at,
     session_end_at,
     duration_seconds,
-    round(duration_seconds / 60.0, 2) as duration_minutes,
-
-    -- A session is valid for engagement metrics when it closed cleanly and has a sane length.
-    -- Excludes the 4 null-end (crash) rows and the 2 multi-hour idle outliers (> 6 hours).
-    (duration_seconds is not null and duration_seconds between 1 and 21600) as is_valid_session,
-
     device_model,
     app_version,
     country_code,
@@ -68,8 +62,14 @@ select
     network_type,
     release_id_in_effect,
     release_version_in_effect,
-
     registered_at,
+
+    round(duration_seconds / 60.0, 2) as duration_minutes,
+
+    -- A session is valid for engagement metrics when it closed cleanly and has a sane length.
+    -- Excludes the 4 null-end (crash) rows and the 2 multi-hour idle outliers (> 6 hours).
+    (duration_seconds is not null and duration_seconds between 1 and 21600) as is_valid_session,
+
     cast(date_trunc('month', registered_at) as date) as registration_cohort_month,
     cast(date_trunc('month', session_start_at) as date) as session_month,
     cast(date_trunc('week', session_start_at) as date) as session_week,

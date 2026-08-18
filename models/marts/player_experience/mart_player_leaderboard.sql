@@ -46,9 +46,9 @@ select
     ranked.leaderboard_id::varchar as leaderboard_id,
     ranked.best_score,
     ranked.legit_submissions,
-    coalesce(flagged.flagged_submissions, 0) as flagged_submissions,
     ranked.rank_in_leaderboard,
     ranked.leaderboard_player_count,
+    coalesce(flagged.flagged_submissions, 0) as flagged_submissions,
     round(ranked.percentile_in_leaderboard, 4) as percentile_in_leaderboard,
     round(ranked.percentile_global, 4) as percentile_global
 from ranked
@@ -56,4 +56,4 @@ left join
     flagged
     on ranked.player_id = flagged.player_id
     and ranked.leaderboard_id = flagged.leaderboard_id
-order by ranked.leaderboard_id, ranked.rank_in_leaderboard
+order by 3, 6

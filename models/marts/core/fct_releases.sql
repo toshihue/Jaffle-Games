@@ -30,19 +30,19 @@ with
             r.dev_days_actual,
             r.qa_bug_count,
             s.player_id,
+            s.crashed_flag,
+            s.is_valid_session,
+            s.duration_minutes,
             (
                 s.session_start_at is not null and s.session_start_at < r.released_at
             ) as is_pre,
             (
                 s.session_start_at is not null and s.session_start_at >= r.released_at
-            ) as is_post,
-            s.crashed_flag,
-            s.is_valid_session,
-            s.duration_minutes
+            ) as is_post
         from releases as r
         left join
             sessions as s
-            on s.title_id = r.title_id
+            on r.title_id = s.title_id
             and s.session_start_at >= dateadd('day', -10, r.released_at)
             and s.session_start_at < dateadd('day', 10, r.released_at)
     ),
@@ -89,18 +89,19 @@ select
 
     dev_days_estimated::integer as dev_days_estimated,
     dev_days_actual::integer as dev_days_actual,
+    qa_bug_count::integer as qa_bug_count,
+
+    sessions_10d_before::integer as sessions_10d_before,
+    sessions_10d_after::integer as sessions_10d_after,
+    active_players_10d_before::integer as active_players_10d_before,
+    active_players_10d_after::integer as active_players_10d_after,
+
     (dev_days_actual - dev_days_estimated)::integer as dev_days_variance,
     round(
         (dev_days_actual - dev_days_estimated) / nullif(dev_days_estimated, 0), 4
     )::number(9, 4) as dev_days_variance_pct,
     (dev_days_actual > dev_days_estimated)::boolean as is_over_budget,
-    qa_bug_count::integer as qa_bug_count,
-
-    sessions_10d_before::integer as sessions_10d_before,
-    sessions_10d_after::integer as sessions_10d_after,
     (sessions_10d_after - sessions_10d_before)::integer as session_count_delta,
-    active_players_10d_before::integer as active_players_10d_before,
-    active_players_10d_after::integer as active_players_10d_after,
 
     round(crashes_10d_before / nullif(sessions_10d_before, 0), 4)::number(
         6, 4

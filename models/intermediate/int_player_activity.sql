@@ -47,5 +47,5 @@ select
     favorite_title.favorite_title_id,
     primary_platform.primary_platform_id
 from base
-left join favorite_title  using (player_id)
-left join primary_platform using (player_id)
+left join favorite_title on base.player_id = favorite_title.player_id
+left join primary_platform on base.player_id = primary_platform.player_id

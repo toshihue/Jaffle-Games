@@ -77,7 +77,7 @@ with
                     sum(net_amount_usd) as title_net
                 from tx
                 group by 1, 2
-            )
+            ) as title_month_net
         group by 1
     ),
 
@@ -95,7 +95,7 @@ with
                     sum(net_amount_usd) as player_net
                 from tx
                 group by 1, 2
-            )
+            ) as player_month_net
         group by 1
     ),
 
@@ -123,6 +123,11 @@ with
 
 select
     months.activity_month,
+    portfolio.titles_total,
+    portfolio.titles_in_launch,
+    portfolio.titles_declining,
+    portfolio.titles_sunset_candidate,
+
     coalesce(actives.monthly_active_players, 0) as monthly_active_players,
     coalesce(actives.sessions, 0) as sessions,
     coalesce(new_players.new_registrations, 0) as new_registrations,
@@ -167,18 +172,13 @@ select
         coalesce(marketing.marketing_spend_usd, 0)
         / nullif(new_players.new_registrations, 0),
         2
-    ) as blended_cac_usd,
-
-    portfolio.titles_total,
-    portfolio.titles_in_launch,
-    portfolio.titles_declining,
-    portfolio.titles_sunset_candidate
+    ) as blended_cac_usd
 from months
-left join actives using (activity_month)
-left join new_players using (activity_month)
-left join revenue_by_month using (activity_month)
-left join title_share using (activity_month)
-left join player_share using (activity_month)
-left join marketing using (activity_month)
+left join actives on months.activity_month = actives.activity_month
+left join new_players on months.activity_month = new_players.activity_month
+left join revenue_by_month on months.activity_month = revenue_by_month.activity_month
+left join title_share on months.activity_month = title_share.activity_month
+left join player_share on months.activity_month = player_share.activity_month
+left join marketing on months.activity_month = marketing.activity_month
 cross join portfolio
-order by months.activity_month
+order by 1

@@ -69,14 +69,14 @@ select
     titles.title_name,
     agg.purchase_category,
     agg.activity_month,
-    round(agg.gross_revenue_usd, 2) as gross_revenue_usd,
-    round(agg.net_revenue_usd, 2) as net_revenue_usd,
-    round(agg.studio_net_revenue_usd, 2) as studio_net_revenue_usd,
-    round(agg.refund_gross_usd, 2) as refund_gross_usd,
     agg.purchase_count,
     agg.refund_count,
     agg.paying_players,
     agg.first_purchases,
+    round(agg.gross_revenue_usd, 2) as gross_revenue_usd,
+    round(agg.net_revenue_usd, 2) as net_revenue_usd,
+    round(agg.studio_net_revenue_usd, 2) as studio_net_revenue_usd,
+    round(agg.refund_gross_usd, 2) as refund_gross_usd,
     coalesce(active.monthly_active_players, 0) as monthly_active_players,
 
     -- Attach rate: share of the title's monthly actives who bought in this category.
@@ -91,9 +91,9 @@ select
     -- Refund rate: refunded gross over gross sold in the category-month.
     round(agg.refund_gross_usd / nullif(agg.gross_revenue_usd, 0), 4) as refund_rate
 from agg
-left join titles using (title_id)
+left join titles on agg.title_id = titles.title_id
 left join
     active
     on agg.title_id = active.title_id
     and agg.activity_month = active.activity_month
-order by agg.title_id, agg.activity_month, agg.purchase_category
+order by 1, 4, 3

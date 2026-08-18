@@ -28,7 +28,7 @@ with
         from releases as r
         left join
             {{ ref("fct_transactions") }} as t
-            on t.title_id = r.title_id
+            on r.title_id = t.title_id
             and t.transaction_at >= dateadd('day', -10, r.released_at)
             and t.transaction_at < dateadd('day', 10, r.released_at)
         group by 1
@@ -58,16 +58,18 @@ select
     releases.session_count_delta,
     releases.active_players_10d_before,
     releases.active_players_10d_after,
+    releases.avg_minutes_10d_before,
+    releases.avg_minutes_10d_after,
+    releases.crash_rate_10d_before,
+    releases.crash_rate_10d_after,
+    releases.made_engagement_worse,
+
     (
         releases.active_players_10d_after - releases.active_players_10d_before
     ) as active_players_delta,
-    releases.avg_minutes_10d_before,
-    releases.avg_minutes_10d_after,
     round(
         releases.avg_minutes_10d_after - releases.avg_minutes_10d_before, 2
     ) as avg_minutes_delta,
-    releases.crash_rate_10d_before,
-    releases.crash_rate_10d_after,
     round(
         releases.crash_rate_10d_after - releases.crash_rate_10d_before, 4
     ) as crash_rate_delta,
@@ -86,8 +88,6 @@ select
         2
     ) as net_rev_per_active_after,
 
-    releases.made_engagement_worse,
-
     -- Overall regression flag: engagement fell, crashes spiked, or the build shipped
     -- badly late.
     (
@@ -96,6 +96,6 @@ select
         or (releases.is_over_budget and releases.dev_days_variance_pct > 0.30)
     ) as regressed_release
 from releases
-left join titles using (title_id)
-left join revenue using (release_id)
-order by releases.released_date
+left join titles on releases.title_id = titles.title_id
+left join revenue on releases.release_id = revenue.release_id
+order by 6
