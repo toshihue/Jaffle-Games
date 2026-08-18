@@ -21,8 +21,8 @@ with
             t.monetization_model,
             t.lifecycle_stage,
             m.month_start_date as activity_month
-        from titles t
-        cross join months m
+        from titles as t
+        cross join months as m
         where m.month_start_date >= date_trunc('month', t.launch_date)
     ),
 

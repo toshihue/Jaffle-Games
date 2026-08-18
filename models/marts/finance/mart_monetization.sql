@@ -13,8 +13,8 @@ with
                 then 'premium_base'
                 else coalesce(s.sku_category, 'other')
             end as purchase_category
-        from {{ ref("fct_transactions") }} t
-        left join {{ ref("dim_skus") }} s on t.sku_id = s.sku_id
+        from {{ ref("fct_transactions") }} as t
+        left join {{ ref("dim_skus") }} as s on t.sku_id = s.sku_id
     ),
 
     titles as (select title_id, title_name from {{ ref("dim_titles") }}),

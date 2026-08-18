@@ -14,7 +14,7 @@ select
 
     session_start_at::timestamp_ntz as session_start_at,
     session_end_at::timestamp_ntz as session_end_at,
-    cast(session_start_at as date) as session_date,
+    session_start_at::date as session_date,
     session_month::date as session_month,
     session_week::date as session_week,
 

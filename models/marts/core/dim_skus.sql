@@ -13,4 +13,4 @@ select
     skus.is_active::boolean as is_active,
     skus.first_available_date::date as first_available_date
 from skus
-left join titles using (title_id)
+left join titles ON skus.title_id = titles.title_id 

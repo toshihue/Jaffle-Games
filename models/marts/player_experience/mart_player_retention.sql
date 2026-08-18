@@ -23,7 +23,7 @@ with
 
     week_offsets as (
         select week_offset
-        from (values (0), (1), (2), (3), (4), (5), (6), (7), (8)) as v(week_offset)
+        from (values (0), (1), (2), (3), (4), (5), (6), (7), (8))
     ),
 
     -- Which (cohort, channel, player) were active at each week offset.
@@ -33,8 +33,8 @@ with
             p.acquisition_channel,
             s.player_id,
             s.week_offset_from_registration as week_offset
-        from {{ ref("fct_play_sessions") }} s
-        inner join players p using (player_id)
+        from {{ ref("fct_play_sessions") }} as s
+        inner join players as p using (player_id)
     ),
 
     retained as (
@@ -53,8 +53,8 @@ with
             c.acquisition_channel,
             c.cohort_size,
             w.week_offset
-        from cohorts c
-        cross join week_offsets w
+        from cohorts as c
+        cross join week_offsets as w
     )
 
 select

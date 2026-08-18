@@ -7,6 +7,9 @@ config-version: 2
 # environment, not in this repo — so no credentials or schema names are hardcoded here.
 profile: 'jaffle_games'
 
+flags:
+  manage_state: false
+
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
@@ -48,6 +51,7 @@ clean-targets:
 # Persist model and column descriptions into Snowflake as COMMENTs (production hygiene:
 # the warehouse itself becomes self-documenting for tools that read metadata).
 models:
+  +static_analysis: strict
   jaffle_games:
     +persist_docs:
       relation: true
@@ -71,12 +75,14 @@ models:
 
 # Seeds get explicit column types in seeds/_seeds.yml — never rely on type inference.
 seeds:
+  +static_analysis: strict
   jaffle_games:
     +persist_docs:
       relation: true
       columns: true
 
 snapshots:
+  +static_analysis: strict
   jaffle_games:
     +persist_docs:
       relation: true

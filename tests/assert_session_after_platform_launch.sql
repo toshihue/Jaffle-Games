@@ -7,8 +7,8 @@ select
     s.platform_id,
     s.session_start_at,
     tp.platform_launch_date
-from {{ ref('fct_play_sessions') }} s
-inner join {{ ref('stg_title_platforms') }} tp
+from {{ ref('fct_play_sessions') }} as s
+inner join {{ ref('stg_title_platforms') }} as tp
     on s.title_id = tp.title_id
    and s.platform_id = tp.platform_id
 where cast(s.session_start_at as date) < tp.platform_launch_date

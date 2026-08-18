@@ -39,9 +39,9 @@ with
             s.crashed_flag,
             s.is_valid_session,
             s.duration_minutes
-        from releases r
+        from releases as r
         left join
-            sessions s
+            sessions as s
             on s.title_id = r.title_id
             and s.session_start_at >= dateadd('day', -10, r.released_at)
             and s.session_start_at < dateadd('day', 10, r.released_at)
@@ -83,7 +83,7 @@ select
     title_id::varchar as title_id,
     app_version::varchar as app_version,
     released_at::timestamp_ntz as released_at,
-    cast(released_at as date) as released_date,
+    released_at::date as released_date,
     release_type::varchar as release_type,
     is_rollback::boolean as is_rollback,
 

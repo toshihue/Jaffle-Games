@@ -23,7 +23,7 @@ favorite_title as (
     from sessions
     group by player_id, title_id
     qualify row_number() over (
-        partition by player_id order by count(*) desc, title_id
+        partition by player_id order by count(*) desc, title_id asc
     ) = 1
 ),
 
@@ -32,7 +32,7 @@ primary_platform as (
     from sessions
     group by player_id, platform_id
     qualify row_number() over (
-        partition by player_id order by count(*) desc, platform_id
+        partition by player_id order by count(*) desc, platform_id asc
     ) = 1
 )
 

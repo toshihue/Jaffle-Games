@@ -33,11 +33,11 @@ joined as (
         p.registered_at,
         r.release_id     as release_id_in_effect,
         r.app_version    as release_version_in_effect
-    from sessions s
-    inner join players p
+    from sessions as s
+    inner join players as p
         on s.player_id = p.player_id
     -- Release in effect = the most recent release for this title on/before the session start.
-    left join releases r
+    left join releases as r
         on r.title_id = s.title_id
        and r.released_at <= s.session_start_at
     qualify row_number() over (

@@ -42,21 +42,21 @@ with
     )
 
 select
-    title_id::varchar as title_id,
-    title_name::varchar as title_name,
-    genre::varchar as genre,
-    sub_genre::varchar as sub_genre,
-    monetization_model::varchar as monetization_model,
-    is_live_service::boolean as is_live_service,
-    launch_date::date as launch_date,
-    list_price_usd::number(12, 2) as list_price_usd,
-    internal_team::varchar as internal_team,
-    engine::varchar as engine,
-    esrb_rating::varchar as esrb_rating,
-    sunset_date::date as sunset_date,
-    days_since_launch::integer as days_since_launch,
-    coalesce(platform_count, 0)::integer as platform_count,
-    earliest_platform_launch_date::date as earliest_platform_launch_date,
+    cast(title_id as varchar) as title_id,
+    cast(title_name as varchar) as title_name,
+    cast(genre as varchar) as genre,
+    cast(sub_genre as varchar) as sub_genre,
+    cast(monetization_model as varchar) as monetization_model,
+    cast(is_live_service as boolean) as is_live_service,
+    cast(launch_date as date) as launch_date,
+    cast(list_price_usd as number(12,2)) as list_price_usd,
+    cast(internal_team as varchar) as internal_team,
+    cast(engine as varchar) as engine,
+    cast(esrb_rating as varchar) as esrb_rating,
+    cast(sunset_date as date) as sunset_date,
+    cast(days_since_launch as integer) as days_since_launch,
+    cast(coalesce(platform_count,0) as integer) as platform_count,
+    cast(earliest_platform_launch_date as date) as earliest_platform_launch_date,
 
     -- Lifecycle stage. Order matters: launch first, then the sunset test, then
     -- activity.
@@ -77,14 +77,14 @@ select
         end
     )::varchar as lifecycle_stage,
 
-    coalesce(lifetime_sessions, 0)::integer as lifetime_sessions,
-    coalesce(lifetime_players, 0)::integer as lifetime_players,
-    first_session_at::timestamp_ntz as first_session_at,
-    last_session_at::timestamp_ntz as last_session_at,
-    days_since_last_session::integer as days_since_last_session,
-    coalesce(sessions_last_60d, 0)::integer as sessions_last_60d,
-    coalesce(active_players_last_90d, 0)::integer as active_players_last_90d,
-    round(avg_review_rating, 2)::number(4, 2) as avg_review_rating,
-    coalesce(review_count, 0)::integer as review_count,
-    round(recommend_rate, 4)::number(5, 4) as recommend_rate
+    cast(coalesce(lifetime_sessions,0) as integer) as lifetime_sessions,
+    cast(coalesce(lifetime_players,0) as integer) as lifetime_players,
+    cast(first_session_at as timestamp_ntz) as first_session_at,
+    cast(last_session_at as timestamp_ntz) as last_session_at,
+    cast(days_since_last_session as integer) as days_since_last_session,
+    cast(coalesce(sessions_last_60d,0) as integer) as sessions_last_60d,
+    cast(coalesce(active_players_last_90d,0) as integer) as active_players_last_90d,
+    cast(round(avg_review_rating,2) as number(4,2)) as avg_review_rating,
+    cast(coalesce(review_count,0) as integer) as review_count,
+    cast(round(recommend_rate,4) as number(5,4)) as recommend_rate
 from joined

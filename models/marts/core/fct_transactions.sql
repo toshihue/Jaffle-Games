@@ -11,8 +11,8 @@ select
 
     transaction_at::timestamp_ntz as transaction_at,
     transaction_at_local::timestamp_ntz as transaction_at_local,
-    cast(transaction_at as date) as transaction_date,
-    cast(date_trunc('month', transaction_at) as date) as transaction_month,
+    transaction_at::date as transaction_date,
+    date_trunc('month',transaction_at)::date as transaction_month,
 
     transaction_type::varchar as transaction_type,
     revenue_stream_group::varchar as revenue_stream_group,

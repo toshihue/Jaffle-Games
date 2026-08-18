@@ -30,13 +30,13 @@ with
         select
             legit_best.*,
             rank() over (
-                partition by leaderboard_id order by best_score desc
+                partition by legit_best.leaderboard_id order by legit_best.best_score desc
             ) as rank_in_leaderboard,
             percent_rank() over (
-                partition by leaderboard_id order by best_score asc
+                partition by legit_best.leaderboard_id order by legit_best.best_score asc
             ) as percentile_in_leaderboard,
-            percent_rank() over (order by best_score asc) as percentile_global,
-            count(*) over (partition by leaderboard_id) as leaderboard_player_count
+            percent_rank() over (order by legit_best.best_score asc) as percentile_global,
+            count(*) over (partition by legit_best.leaderboard_id) as leaderboard_player_count
         from legit_best
     )
 

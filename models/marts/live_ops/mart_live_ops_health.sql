@@ -25,9 +25,9 @@ with
                     when t.transaction_at >= r.released_at then t.net_amount_usd else 0
                 end
             ) as net_revenue_10d_after
-        from releases r
+        from releases as r
         left join
-            {{ ref("fct_transactions") }} t
+            {{ ref("fct_transactions") }} as t
             on t.title_id = r.title_id
             and t.transaction_at >= dateadd('day', -10, r.released_at)
             and t.transaction_at < dateadd('day', 10, r.released_at)

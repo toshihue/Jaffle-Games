@@ -36,7 +36,7 @@ select
     leaderboard_id::varchar as leaderboard_id,
     score_value::number(38, 0) as score_value,
     submitted_at::timestamp_ntz as submitted_at,
-    cast(submitted_at as date) as submitted_date,
+    submitted_at::date as submitted_date,
     is_verified::boolean as is_verified,
     flagged_for_cheating::boolean as flagged_for_cheating,
     leaderboard_rank::integer as leaderboard_rank,
