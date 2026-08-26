@@ -1,4 +1,4 @@
-
+with 
     source as (select * from {{ ref("raw_high_scores") }}),
 
     renamed as (
