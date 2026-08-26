@@ -10,7 +10,10 @@ profile: 'jaffle_games'
 flags:
   manage_state: false
   use_catalogs_v2: true
-
+  warn_error_options:
+    silence:
+      - NotYetSupportedOption
+      - InvalidConfig
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
