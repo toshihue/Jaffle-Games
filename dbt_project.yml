@@ -9,6 +9,7 @@ profile: 'jaffle_games'
 
 flags:
   manage_state: false
+  use_catalogs_v2: true
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]

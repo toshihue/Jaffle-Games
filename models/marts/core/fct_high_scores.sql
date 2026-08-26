@@ -1,3 +1,4 @@
+
 -- One row per leaderboard submission. Cheat-flagged submissions are kept (and
 -- counted) but
 -- are excluded from competitive ranking: ranks and percentiles are computed only among
@@ -34,11 +35,11 @@ select
     player_id::varchar as player_id,
     title_id::varchar as title_id,
     leaderboard_id::varchar as leaderboard_id,
-    score_value::number(38, 0) as score_value,
-    submitted_at::timestamp_ntz as submitted_at,
+    score_value::decimal(38, 0) as score_value,
+    submitted_at as submitted_at,
     submitted_at::date as submitted_date,
     is_verified::boolean as is_verified,
     flagged_for_cheating::boolean as flagged_for_cheating,
     leaderboard_rank::integer as leaderboard_rank,
-    round(score_percentile, 4)::number(6, 4) as score_percentile
+    round(score_percentile, 4)::decimal(6, 4) as score_percentile
 from ranked

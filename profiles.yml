@@ -1,0 +1,44 @@
+## Profile for the multi-catalog demo.
+##
+## `outputs.<target>` is a flat *list* of connections, one per adapter the target
+## can run on. `type:` identifies the adapter; the connection carrying
+## `default: true` is the project default, and the adapter holding it is the
+## target's default adapter. Nodes opt into a non-default adapter with
+## `+adapter:` / `config(adapter=...)` — see fct_high_scores, which asks for
+## lake_compute. A target that declares more than one adapter MUST mark a
+## default explicitly; ordering is deliberately not the tiebreaker.
+jaffle_games_multi_catalog:
+  target: snowflake_demo
+  outputs:
+    snowflake_demo:
+      ## Default adapter — native Snowflake against the catalog-linked database
+      ## created from the Snowflake catalog integration pointed at the
+      ## opening_pulling MDLS destination. Key-pair auth (password 403s here);
+      ## creds come from the "MDLS Compute (Snowflake)" 1Password item. See
+      ## .env.example for the SNOWFLAKE_* vars.
+      - type: snowflake
+        default: true
+        account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+        user: "{{ env_var('SNOWFLAKE_USER') }}"
+        private_key: "{{ env_var('SNOWFLAKE_PRIVATE_KEY') }}"
+        role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+        database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+        schema: "{{ env_var('SNOWFLAKE_SCHEMA') }}"
+        warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+        threads: 4
+
+      ## Lake compute — queries the opening_pulling MDLS destination via the
+      ## staging Lake Compute service. Needs LAKE_COMPUTE_AUTH_TOKEN (a minted
+      ## JWT) + LAKE_COMPUTE_ORG from the env; see polaris.envrc /
+      ## dbt-aws-cloud-cost.envrc in the private overlay.
+      ##
+      ## `target_catalog` is omitted on purpose: it is derived per model from the
+      ## catalog the model attaches to, and only needs setting to override that.
+      - type: lake_compute
+        method: token
+        base_url: "{{ env_var('LAKE_COMPUTE_BASE_URL') }}"
+        token: "{{ env_var('LAKE_COMPUTE_AUTH_TOKEN') }}"
+        organization: "{{ env_var('LAKE_COMPUTE_ORG') }}"
+        database: "{{ env_var('LAKE_COMPUTE_DATABASE') }}"
+        schema: "{{ env_var('LAKE_COMPUTE_SCHEMA') }}"
+        threads: 4

@@ -3,3 +3,4 @@ target/
 .github/
 logs/
 dbt_internal_packages/
+.env
