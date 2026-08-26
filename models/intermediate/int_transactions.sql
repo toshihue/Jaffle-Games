@@ -40,4 +40,4 @@ select
 
     (transaction_type in ('iap', 'season_pass', 'refund', 'chargeback')) as is_live_service_revenue
 
-from transactions
+FROM transactions

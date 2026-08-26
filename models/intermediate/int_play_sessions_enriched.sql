@@ -72,7 +72,7 @@ select
 
     cast(date_trunc('month', registered_at) as date) as registration_cohort_month,
     cast(date_trunc('month', session_start_at) as date) as session_month,
-    cast(date_trunc('week', session_start_at) as date) as session_week,
+    date_trunc('week', session_start_at)::date as session_week,
 
     -- Whole weeks elapsed between registration and the session (0 = registration week).
     floor(datediff('day', registered_at, session_start_at) / 7) as week_offset_from_registration,

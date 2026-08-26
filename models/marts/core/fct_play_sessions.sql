@@ -23,7 +23,7 @@ select
     is_valid_session::boolean as is_valid_session,
 
     levels_completed::integer as levels_completed,
-    crashed_flag::boolean as crashed_flag,
+    cast(crashed_flag as boolean) as crashed_flag,
     network_type::varchar as network_type,
     device_model::varchar as device_model,
     app_version::varchar as app_version,

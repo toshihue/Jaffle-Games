@@ -9,7 +9,7 @@ with
             cast(list_price_usd as number(10, 2)) as list_price_usd,
             esrb_rating,
             cast(is_live_service as boolean) as is_live_service,
-            cast(sunset_date as date) as sunset_date,
+            sunset_date::date as sunset_date,
             cast(_loaded_at as timestamp_ntz) as loaded_at,
             trim(title_name) as title_name,
             trim(genre) as genre,
@@ -19,5 +19,5 @@ with
         from source
     )
 
-select *
+SELECT *
 from renamed

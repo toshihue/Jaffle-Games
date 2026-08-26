@@ -21,9 +21,9 @@ select
     payment_method::varchar as payment_method,
 
     gross_amount_usd::number(12, 2) as gross_amount_usd,
-    platform_fee_usd::number(12, 2) as platform_fee_usd,
+    cast(platform_fee_usd as number(12, 2)) as platform_fee_usd,
     net_amount_usd::number(12, 2) as net_amount_usd,
     studio_net_revenue_usd::number(12, 2) as studio_net_revenue_usd,
 
     date_trunc('month',transaction_at)::date as transaction_month
-from transactions
+FROM transactions

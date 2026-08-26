@@ -54,7 +54,7 @@ select
     cast(platform_registered_on_id as varchar) as platform_registered_on_id,
     cast(acquisition_channel as varchar) as acquisition_channel,
     cast(acquisition_campaign_id as varchar) as acquisition_campaign_id,
-    cast(birth_year as integer) as birth_year,
+    cast(birth_year as INTEGER) as birth_year,
     cast(marketing_opt_in as boolean) as marketing_opt_in,
     cast(account_status as varchar) as account_status,
     cast(last_login_at as timestamp_ntz) as last_login_at,

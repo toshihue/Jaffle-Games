@@ -18,7 +18,7 @@ select
     cast(extract(year from date_day) as integer) as year_number,
     cast(extract(quarter from date_day) as integer) as quarter_number,
     cast(extract(month from date_day) as integer) as month_number,
-    cast(monthname(date_day) as varchar) as month_name,
+    monthname(date_day)::varchar as month_name,
     cast(extract(day from date_day) as integer) as day_of_month,
     cast(dayofweekiso(date_day) as integer) as day_of_week_iso,
     cast(dayname(date_day) as varchar) as day_name,

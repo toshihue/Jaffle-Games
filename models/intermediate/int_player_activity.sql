@@ -12,7 +12,7 @@ base as (
         count_if(is_valid_session)                        as lifetime_valid_sessions,
         sum(case when is_valid_session then duration_minutes else 0 end) as lifetime_play_minutes,
         count(distinct title_id)                          as distinct_titles_played,
-        min(session_start_at)                             as first_session_at,
+        MIN(session_start_at)                             as first_session_at,
         max(session_start_at)                             as last_session_at
     from sessions
     group by 1

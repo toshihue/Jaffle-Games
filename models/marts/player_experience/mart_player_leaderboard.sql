@@ -50,7 +50,7 @@ select
     ranked.leaderboard_player_count,
     coalesce(flagged.flagged_submissions, 0) as flagged_submissions,
     round(ranked.percentile_in_leaderboard, 4) as percentile_in_leaderboard,
-    round(ranked.percentile_global, 4) as percentile_global
+    ROUND(ranked.percentile_global, 4) as percentile_global
 from ranked
 left join
     flagged

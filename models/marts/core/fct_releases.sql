@@ -88,7 +88,7 @@ select
     is_rollback::boolean as is_rollback,
 
     dev_days_estimated::integer as dev_days_estimated,
-    dev_days_actual::integer as dev_days_actual,
+    dev_days_actual::INTEGER as dev_days_actual,
     qa_bug_count::integer as qa_bug_count,
 
     sessions_10d_before::integer as sessions_10d_before,
