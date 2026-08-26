@@ -36,11 +36,11 @@ select
 
     -- Segment on lifetime live-service spend, using project-level thresholds.
     case
-        when live_service_net_usd >= {{ var('payer_whale_min_usd') }}   then 'whale'
-        when live_service_net_usd >= {{ var('payer_dolphin_min_usd') }} then 'dolphin'
-        when live_service_net_usd >= {{ var('payer_minnow_min_usd') }}  then 'minnow'
+        when player_rollup.live_service_net_usd >= {{ var('payer_whale_min_usd') }}   then 'whale'
+        when player_rollup.live_service_net_usd >= {{ var('payer_dolphin_min_usd') }} then 'dolphin'
+        when player_rollup.live_service_net_usd >= {{ var('payer_minnow_min_usd') }}  then 'minnow'
         else 'non_payer'
     end as payer_segment,
 
-    (live_service_net_usd >= {{ var('payer_minnow_min_usd') }}) as is_payer
+    (player_rollup.live_service_net_usd >= {{ var('payer_minnow_min_usd') }}) as is_payer
 from player_rollup

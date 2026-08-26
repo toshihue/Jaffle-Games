@@ -9,14 +9,14 @@ with
             platform as platform_id,
             cast(session_start_at as timestamp_ntz) as session_start_at,
             cast(session_end_at as timestamp_ntz) as session_end_at,
-            cast(duration_seconds as integer) as duration_seconds,
+            duration_seconds::integer as duration_seconds,
             device_model,
             app_version,
-            {{ clean_country_code("country_code") }} as country_code,
             cast(levels_completed as integer) as levels_completed,
             cast(crashed_flag as boolean) as crashed_flag,
             network_type,
-            cast(_loaded_at as timestamp_ntz) as loaded_at
+            cast(_loaded_at as timestamp_ntz) as loaded_at,
+            {{ clean_country_code("country_code") }} as country_code
         from source
     ),
 

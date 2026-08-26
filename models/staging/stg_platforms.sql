@@ -4,8 +4,8 @@ with
     renamed as (
         select
             platform as platform_id,
-            platform_family,
-            cast(storefront_fee_rate as number(4, 3)) as storefront_fee_rate
+            platform_family as platform_family,
+            cast(storefront_fee_rate as number(4, 3)) + 4 as storefront_fee_rate
         from source
     )
 

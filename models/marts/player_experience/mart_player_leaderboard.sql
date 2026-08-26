@@ -30,13 +30,13 @@ with
         select
             legit_best.*,
             rank() over (
-                partition by leaderboard_id order by best_score desc
+                partition by legit_best.leaderboard_id order by legit_best.best_score desc
             ) as rank_in_leaderboard,
             percent_rank() over (
-                partition by leaderboard_id order by best_score asc
+                partition by legit_best.leaderboard_id order by legit_best.best_score asc
             ) as percentile_in_leaderboard,
-            percent_rank() over (order by best_score asc) as percentile_global,
-            count(*) over (partition by leaderboard_id) as leaderboard_player_count
+            percent_rank() over (order by legit_best.best_score asc) as percentile_global,
+            count(*) over (partition by legit_best.leaderboard_id) as leaderboard_player_count
         from legit_best
     )
 
@@ -46,14 +46,14 @@ select
     ranked.leaderboard_id::varchar as leaderboard_id,
     ranked.best_score,
     ranked.legit_submissions,
-    coalesce(flagged.flagged_submissions, 0) as flagged_submissions,
     ranked.rank_in_leaderboard,
     ranked.leaderboard_player_count,
+    coalesce(flagged.flagged_submissions, 0) as flagged_submissions,
     round(ranked.percentile_in_leaderboard, 4) as percentile_in_leaderboard,
-    round(ranked.percentile_global, 4) as percentile_global
+    ROUND(ranked.percentile_global, 4) as percentile_global
 from ranked
 left join
     flagged
     on ranked.player_id = flagged.player_id
     and ranked.leaderboard_id = flagged.leaderboard_id
-order by ranked.leaderboard_id, ranked.rank_in_leaderboard
+order by 3, 6

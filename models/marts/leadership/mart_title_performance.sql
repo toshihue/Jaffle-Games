@@ -21,8 +21,8 @@ with
             t.monetization_model,
             t.lifecycle_stage,
             m.month_start_date as activity_month
-        from titles t
-        cross join months m
+        from titles as t
+        cross join months as m
         where m.month_start_date >= date_trunc('month', t.launch_date)
     ),
 
@@ -70,14 +70,14 @@ with
             spine.monetization_model,
             spine.lifecycle_stage,
             spine.activity_month,
+            sessions.avg_session_minutes,
+            reviews.avg_review_rating,
             coalesce(sessions.monthly_active_players, 0) as monthly_active_players,
             coalesce(sessions.sessions, 0) as sessions,
             coalesce(sessions.valid_sessions, 0) as valid_sessions,
-            sessions.avg_session_minutes,
             coalesce(revenue.net_revenue_usd, 0) as net_revenue_usd,
             coalesce(revenue.studio_net_revenue_usd, 0) as studio_net_revenue_usd,
             coalesce(revenue.paying_players, 0) as paying_players,
-            reviews.avg_review_rating,
             coalesce(reviews.review_count, 0) as review_count
         from spine
         left join
@@ -104,20 +104,21 @@ with
             monthly_active_players,
             sessions,
             valid_sessions,
+            paying_players,
+            review_count,
+
             round(
                 valid_sessions / nullif(monthly_active_players, 0), 2
             ) as sessions_per_active_player,
             round(avg_session_minutes, 2) as avg_session_minutes,
             round(net_revenue_usd, 2) as net_revenue_usd,
             round(studio_net_revenue_usd, 2) as studio_net_revenue_usd,
-            paying_players,
             round(net_revenue_usd / nullif(monthly_active_players, 0), 2) as arpu_usd,
             round(net_revenue_usd / nullif(paying_players, 0), 2) as arppu_usd,
             round(
                 paying_players / nullif(monthly_active_players, 0), 4
             ) as payer_conversion_rate,
             round(avg_review_rating, 2) as avg_review_rating,
-            review_count,
 
             -- Month-over-month deltas within each title.
             monthly_active_players - lag(monthly_active_players) over (

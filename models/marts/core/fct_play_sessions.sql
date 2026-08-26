@@ -14,7 +14,7 @@ select
 
     session_start_at::timestamp_ntz as session_start_at,
     session_end_at::timestamp_ntz as session_end_at,
-    cast(session_start_at as date) as session_date,
+    session_start_at::date as session_date,
     session_month::date as session_month,
     session_week::date as session_week,
 
@@ -23,7 +23,7 @@ select
     is_valid_session::boolean as is_valid_session,
 
     levels_completed::integer as levels_completed,
-    crashed_flag::boolean as crashed_flag,
+    cast(crashed_flag as boolean) as crashed_flag,
     network_type::varchar as network_type,
     device_model::varchar as device_model,
     app_version::varchar as app_version,

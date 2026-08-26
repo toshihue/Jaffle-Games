@@ -11,8 +11,7 @@ select
 
     transaction_at::timestamp_ntz as transaction_at,
     transaction_at_local::timestamp_ntz as transaction_at_local,
-    cast(transaction_at as date) as transaction_date,
-    cast(date_trunc('month', transaction_at) as date) as transaction_month,
+    transaction_at::date as transaction_date,
 
     transaction_type::varchar as transaction_type,
     revenue_stream_group::varchar as revenue_stream_group,
@@ -22,7 +21,9 @@ select
     payment_method::varchar as payment_method,
 
     gross_amount_usd::number(12, 2) as gross_amount_usd,
-    platform_fee_usd::number(12, 2) as platform_fee_usd,
+    cast(platform_fee_usd as number(12, 2)) as platform_fee_usd,
     net_amount_usd::number(12, 2) as net_amount_usd,
-    studio_net_revenue_usd::number(12, 2) as studio_net_revenue_usd
-from transactions
+    studio_net_revenue_usd::number(12, 2) as studio_net_revenue_usd,
+
+    date_trunc('month',transaction_at)::date as transaction_month
+FROM transactions

@@ -12,7 +12,7 @@ base as (
         count_if(is_valid_session)                        as lifetime_valid_sessions,
         sum(case when is_valid_session then duration_minutes else 0 end) as lifetime_play_minutes,
         count(distinct title_id)                          as distinct_titles_played,
-        min(session_start_at)                             as first_session_at,
+        MIN(session_start_at)                             as first_session_at,
         max(session_start_at)                             as last_session_at
     from sessions
     group by 1
@@ -23,7 +23,7 @@ favorite_title as (
     from sessions
     group by player_id, title_id
     qualify row_number() over (
-        partition by player_id order by count(*) desc, title_id
+        partition by player_id order by count(*) desc, title_id asc
     ) = 1
 ),
 
@@ -32,7 +32,7 @@ primary_platform as (
     from sessions
     group by player_id, platform_id
     qualify row_number() over (
-        partition by player_id order by count(*) desc, platform_id
+        partition by player_id order by count(*) desc, platform_id asc
     ) = 1
 )
 
@@ -47,5 +47,5 @@ select
     favorite_title.favorite_title_id,
     primary_platform.primary_platform_id
 from base
-left join favorite_title  using (player_id)
-left join primary_platform using (player_id)
+left join favorite_title on base.player_id = favorite_title.player_id
+left join primary_platform on base.player_id = primary_platform.player_id
