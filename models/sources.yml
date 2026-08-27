@@ -1,0 +1,8 @@
+sources:
+  - name: raw
+    database: ANALYTICS_DEV
+    schema: jaffle_games_raw
+    description: "Raw data from the platform's source systems."
+    tables:
+      - name: raw_platforms
+        description: "Raw data from the platform's source systems."

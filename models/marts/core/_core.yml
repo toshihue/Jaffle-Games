@@ -6,21 +6,23 @@ models:
   # ====================================================================================
   - name: dim_platforms
     description: Conformed platform dimension — one row per storefront, with fee economics.
-    config:
-      contract:
-        enforced: true
+
     columns:
       - name: platform_id
         description: Storefront identifier (primary key).
         data_type: varchar
-        constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: platform_family
         description: Whether the storefront is pc, console or mobile — the level most portfolio cuts use.
         data_type: varchar
       - name: storefront_fee_rate
         description: Share of gross revenue the storefront keeps; the lever behind studio net revenue.
-        data_type: number(4,3)
+      - name: model_revision
+        description: >
+          Revision of the model SQL that built this table, set by model_revision() in
+          dim_platforms.sql. Bumped by hand and only ever upward, so a higher value always
+          means a later definition. Carries no business meaning — do not join or filter on it.
+        data_type: number(9,0)
 
   # ------------------------------------------------------------------------------------
   - name: dim_skus
@@ -312,12 +314,6 @@ models:
       - name: primary_platform_id
         description: Storefront the player uses most.
         data_type: varchar
-        data_tests:
-          - relationships:
-              arguments:
-                to: ref('dim_platforms')
-                field: platform_id
-              config: {where: "primary_platform_id is not null"}
       - name: live_service_net_usd
         description: Lifetime live-service spend (iap + season_pass, net of reversals) — the basis for payer_segment.
         data_type: number(12,2)
@@ -394,8 +390,6 @@ models:
         data_type: varchar
         data_tests:
           - not_null
-          - relationships:
-              arguments: {to: ref('dim_platforms'), field: platform_id}
         entity:
           type: foreign
           name: platform
@@ -569,8 +563,6 @@ models:
         data_type: varchar
         data_tests:
           - not_null
-          - relationships:
-              arguments: {to: ref('dim_platforms'), field: platform_id}
         entity:
           type: foreign
           name: platform

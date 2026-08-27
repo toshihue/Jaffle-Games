@@ -10,10 +10,12 @@ profile: 'jaffle_games'
 flags:
   manage_state: false
   use_catalogs_v2: true
+  no_write_json: true
   warn_error_options:
     silence:
       - NotYetSupportedOption
       - InvalidConfig
+
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
@@ -57,9 +59,6 @@ clean-targets:
 models:
   +static_analysis: strict
   jaffle_games:
-    +persist_docs:
-      relation: true
-      columns: true
     staging:
       +materialized: view
     intermediate:
@@ -81,13 +80,7 @@ models:
 seeds:
   +static_analysis: strict
   jaffle_games:
-    +persist_docs:
-      relation: true
-      columns: true
+    +schema: jaffle_games_raw
 
 snapshots:
   +static_analysis: strict
-  jaffle_games:
-    +persist_docs:
-      relation: true
-      columns: true
