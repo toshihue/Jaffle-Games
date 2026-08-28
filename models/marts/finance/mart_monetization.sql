@@ -26,7 +26,7 @@ with
 
     titles as (
         select title_id, title_name
-        from analytics_dev.jaffle_games_state_prod.dim_titles
+        from {{ ref('dim_titles') }}
     ),
 
     -- Monthly active players per title, to normalize attach/conversion.
