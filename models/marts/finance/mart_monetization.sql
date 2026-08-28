@@ -19,8 +19,6 @@ with
             on t.sku_id = s.sku_id or (t.sku_id is null and s.sku_id is null)
     ),
 
-    -- TODO: fully qualified while the dim_titles rebuild is in flight; put
-    -- ref('dim_titles') back once it lands.
     titles as (
         select title_id, title_name
         from analytics_dev.jaffle_games_state_prod.dim_titles
