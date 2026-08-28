@@ -65,6 +65,9 @@ models:
       - name: first_available_date
         description: Date the item first went on sale.
         data_type: date
+      - name: legacy_sku_id
+        description: Pre-migration storefront id for the item, kept for joins against older transactions.
+        data_type: varchar
 
   # ------------------------------------------------------------------------------------
   - name: dim_dates

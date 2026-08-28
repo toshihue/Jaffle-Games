@@ -14,9 +14,14 @@ with
                 else coalesce(s.sku_category, 'other')
             end as purchase_category
         from {{ ref("fct_transactions") }} as t
-        -- Match on the SKU, keeping null-keyed rows (premium unit sales) null-safe.
+        -- Match on the current SKU id, falling back to the pre-migration id for
+        -- catalogue rows that never got renumbered.
         left join {{ ref("dim_skus") }} as s
-            on t.sku_id = s.sku_id or (t.sku_id is null and s.sku_id is null)
+            on t.sku_id = s.sku_id
+            or (
+                s.sku_id is null
+                and t.sku_id = s.legacy_sku_id
+            )
     ),
 
     titles as (
