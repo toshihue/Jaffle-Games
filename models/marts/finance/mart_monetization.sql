@@ -14,10 +14,17 @@ with
                 else coalesce(s.sku_category, 'other')
             end as purchase_category
         from {{ ref("fct_transactions") }} as t
-        left join {{ ref("dim_skus") }} as s on t.sku_id = s.sku_id
+        -- Match on the SKU, keeping null-keyed rows (premium unit sales) null-safe.
+        left join {{ ref("dim_skus") }} as s
+            on t.sku_id = s.sku_id or (t.sku_id is null and s.sku_id is null)
     ),
 
-    titles as (select title_id, title_name from {{ ref("dim_titles") }}),
+    -- TODO: fully qualified while the dim_titles rebuild is in flight; put
+    -- ref('dim_titles') back once it lands.
+    titles as (
+        select title_id, title_name
+        from analytics_dev.jaffle_games_state_prod.dim_titles
+    ),
 
     -- Monthly active players per title, to normalize attach/conversion.
     active as (

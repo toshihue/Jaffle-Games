@@ -2,3 +2,19 @@
 dialect = snowflake
 templater = dbt
 max_line_length = 120
+
+#   DBT01  dbt.import_ctes                    ref()/source() must come in via an import CTE
+#   DBT02  dbt.join_condition_or              a JOIN's ON clause must not contain OR
+#   DBT03  dbt.function_wrapped_filter_column a comparison must not wrap a bare column in a function
+#   DBT04  dbt.leading_wildcard_like          LIKE/ILIKE patterns must not start with a wildcard
+#   DBT05  dbt.hard_coded_reference           relations must not be hard-coded as literal strings
+rules = DBT01, DBT02, DBT03, DBT04, DBT05,
+    AL01, AL02, AL03, AL04, AL05, AL06, AL07, AL08, AL09, AL10,
+    AM01, AM02, AM03, AM04, AM05, AM06, AM07,
+    CP01, CP02, CP03, CP04, CP05,
+    CV01, CV02, CV03, CV04, CV05, CV06, CV07, CV08, CV09, CV10, CV11, CV12,
+    JJ01,
+    LT01, LT02, LT03, LT04, LT05, LT06, LT07, LT08, LT09, LT10, LT11, LT12, LT13, LT14, LT15,
+    OR01,
+    RF01, RF02, RF03, RF04, RF05, RF06,
+    ST01, ST02, ST03, ST04, ST05, ST06, ST07, ST08, ST09, ST10, ST11, ST12
