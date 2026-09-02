@@ -17,11 +17,7 @@ with
         -- Match on the current SKU id, falling back to the pre-migration id for
         -- catalogue rows that never got renumbered.
         left join {{ ref("dim_skus") }} as s
-            on t.sku_id = s.sku_id
-            or (
-                s.sku_id is null
-                and t.sku_id = s.legacy_sku_id
-            )
+            on t.sku_id = coalesce(s.sku_id, s.legacy_sku_id)
     ),
 
     titles as (
