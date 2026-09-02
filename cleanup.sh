@@ -1,8 +1,9 @@
+git reset --hard HEAD
+
 /Users/elias/.local/bin/dbt lint --fix
 cp -f ./setup/mart_monetization_modified.sql ./models/marts/finance/mart_monetization.sql
 /Users/elias/.local/bin/dbt build --target prod --manage-state
 
-git reset --hard HEAD
 
 # Bump the dev target/schema to the next increment so each run gets a fresh schema
 CURRENT=$(grep -oE 'dev_cool_guy_[0-9]+' profiles.yml | grep -oE '[0-9]+$' | head -1)
