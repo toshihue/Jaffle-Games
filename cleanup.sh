@@ -14,3 +14,4 @@ echo "Bumped dev_cool_guy_${CURRENT} -> dev_cool_guy_${NEXT}"
 /Users/elias/.local/bin/dbt debug
 /Users/elias/.local/bin/dbt debug --target dev_cool_guy_${NEXT}
 /Users/elias/.local/bin/dbt deps
+/Users/elias/.local/bin/dbt test --resource-types unit_test
