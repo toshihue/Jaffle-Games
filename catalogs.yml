@@ -4,4 +4,4 @@ catalogs:
     table_format: iceberg
     config:
       snowflake:
-        catalog_database: "{{ env_var('SNOWFLAKE_CATALOG_DATABASE') }}"
+        catalog_database: "{{ env_var('DBT_SNOWFLAKE_CATALOG_DATABASE') }}"
