@@ -6,6 +6,9 @@ models:
   # ====================================================================================
   - name: dim_platforms
     description: Conformed platform dimension — one row per storefront, with fee economics.
+    config:
+      contract:
+        enforced: true
 
     columns:
       - name: platform_id
@@ -17,12 +20,7 @@ models:
         data_type: varchar
       - name: storefront_fee_rate
         description: Share of gross revenue the storefront keeps; the lever behind studio net revenue.
-      - name: model_revision
-        description: >
-          Revision of the model SQL that built this table, set by model_revision() in
-          dim_platforms.sql. Bumped by hand and only ever upward, so a higher value always
-          means a later definition. Carries no business meaning — do not join or filter on it.
-        data_type: number(9,0)
+        data_type: number(4,3)
 
   # ------------------------------------------------------------------------------------
   - name: dim_skus
