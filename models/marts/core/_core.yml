@@ -77,12 +77,15 @@ models:
     config:
       contract:
         enforced: true
+    time_spine:
+      standard_granularity_column: date_day
     columns:
       - name: date_day
         description: Calendar day (primary key).
         data_type: date
         constraints: [type: not_null]
         data_tests: [unique, not_null]
+        granularity: day
       - name: year_number
         description: Calendar year.
         data_type: integer
