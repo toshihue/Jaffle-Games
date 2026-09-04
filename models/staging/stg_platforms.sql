@@ -2,7 +2,7 @@
     materialized='table'
 ) }}
 with
-    source as (select * from {{ source('raw', "raw_platforms") }}),
+    source as (select * from {{ ref("raw_platforms") }}),
 
     renamed as (
         select
