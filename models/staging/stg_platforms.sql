@@ -7,8 +7,9 @@ with
     renamed as (
         select
             platform as platform_id,
-            platform_family as platform_family,
-            storefront_fee_rate + 4 as storefront_fee_rate
+            platform_family,
+            storefront_fee_rate as storefront_rate,
+            {{ calculate_additional_fee(3) }} as additional_fee
         from source
     )
 

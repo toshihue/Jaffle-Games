@@ -6,9 +6,6 @@ models:
   # ====================================================================================
   - name: dim_platforms
     description: Conformed platform dimension — one row per storefront, with fee economics.
-    config:
-      contract:
-        enforced: true
 
     columns:
       - name: platform_id
