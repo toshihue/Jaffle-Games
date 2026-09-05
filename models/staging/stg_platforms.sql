@@ -8,7 +8,7 @@ with
         select
             platform as platform_id,
             platform_family,
-            storefront_fee_rate as storefront_rate,
+            storefront_fee_rate,
             {{ calculate_additional_fee(3) }} as additional_fee
         from source
     )
