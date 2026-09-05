@@ -1,7 +1,7 @@
 sources:
   - name: raw
-    database: ANALYTICS_DEV
-    schema: jaffle_games_raw
+    database: JAFFLE_OLYMPICS
+    schema: PROD
     description: "Raw data from the platform's source systems."
     tables:
       - name: raw_platforms

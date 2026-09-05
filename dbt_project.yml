@@ -5,7 +5,7 @@ config-version: 2
 # This project is executed against the dbt platform (Snowflake target database ANALYTICS).
 # Connection, role, warehouse and the developer's dev schema are configured in the platform
 # environment, not in this repo — so no credentials or schema names are hardcoded here.
-profile: 'jaffle_games'
+profile: 'jaffle_games_multi_catalog'
 
 flags:
   manage_state: false
@@ -79,8 +79,6 @@ models:
 # Seeds get explicit column types in seeds/_seeds.yml — never rely on type inference.
 seeds:
   +static_analysis: strict
-  jaffle_games:
-    +schema: jaffle_games_raw
 
 snapshots:
   +static_analysis: strict

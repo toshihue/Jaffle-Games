@@ -1,7 +1,0 @@
-catalogs:
-  - name: mdls
-    type: iceberg_rest
-    table_format: iceberg
-    config:
-      snowflake:
-        catalog_database: "{{ env_var('SNOWFLAKE_CATALOG_DATABASE') }}"
