@@ -349,6 +349,92 @@ models:
   # ====================================================================================
   # FACTS
   # ====================================================================================
+  - name: fct_player_daily_activity
+    description: >
+      One row per player and UTC calendar day. Aggregates session activity so engaged players
+      are defined consistently as having at least 60 minutes of valid play in a day.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: player_activity_id
+        description: Stable identifier for the player-day activity record.
+        data_type: varchar
+        constraints: [type: not_null]
+        data_tests: [unique, not_null]
+        entity:
+          type: primary
+          name: player_activity
+      - name: player_id
+        description: Player who generated the daily activity.
+        data_type: varchar
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_players'), field: player_id}
+        entity:
+          type: foreign
+          name: player
+      - name: activity_date
+        description: UTC calendar date containing the player's sessions.
+        data_type: date
+        data_tests: [not_null]
+        dimension:
+          type: time
+          name: activity_day
+        granularity: day
+      - name: session_count
+        description: All sessions played by the player on the activity date.
+        data_type: integer
+      - name: valid_session_count
+        description: Sessions excluding crashes and idle outliers on the activity date.
+        data_type: integer
+      - name: play_minutes
+        description: Valid play minutes accumulated by the player on the activity date.
+        data_type: number(12,2)
+      - name: is_engaged_player
+        description: >
+          True when valid play minutes meet the configured daily engagement threshold.
+        data_type: boolean
+        dimension:
+          type: categorical
+    semantic_model:
+      enabled: true
+      name: fct_player_daily_activity
+    agg_time_dimension: activity_day
+    metrics:
+      - name: monthly_engaged_players
+        label: Monthly engaged players
+        description: >
+          Distinct players with at least one day of 60 or more valid play minutes in a period
+          (query at the month grain for MEP).
+        type: simple
+        filter: "{{ Dimension('player_activity__is_engaged_player') }} = true"
+        agg: count_distinct
+        expr: player_id
+      - name: engaged_session_count
+        description: Total sessions on engaged player-days.
+        type: simple
+        filter: "{{ Dimension('player_activity__is_engaged_player') }} = true"
+        agg: sum
+        expr: session_count
+        hidden: true
+      - name: engaged_valid_session_count
+        description: Valid sessions on engaged player-days.
+        type: simple
+        filter: "{{ Dimension('player_activity__is_engaged_player') }} = true"
+        agg: sum
+        expr: valid_session_count
+        hidden: true
+      - name: engaged_play_minutes
+        description: Valid play minutes on engaged player-days.
+        type: simple
+        filter: "{{ Dimension('player_activity__is_engaged_player') }} = true"
+        agg: sum
+        expr: play_minutes
+        hidden: true
+
+  # ------------------------------------------------------------------------------------
   - name: fct_play_sessions
     description: >
       One row per play session. The central engagement fact: duration, validity, the release
