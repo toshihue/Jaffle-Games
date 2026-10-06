@@ -45,9 +45,6 @@ vars:
   # has_sufficient_volume = false rather than being shown as if they were reliable.
   min_active_players_threshold: 5
 
-  # A player is engaged on a day after at least this many valid play minutes.
-  engaged_player_min_daily_play_minutes: 60
-
   # Analysis "as of" date — the close of the history window. Used for recency/churn math
   # so results are stable and reproducible regardless of when the project is run.
   analysis_as_of_date: '2026-08-05'
