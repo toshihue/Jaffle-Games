@@ -10,7 +10,14 @@ base as (
         player_id,
         count(*)                                          as lifetime_sessions,
         count_if(is_valid_session)                        as lifetime_valid_sessions,
-        sum(case when is_valid_session then duration_minutes else 0 end) as lifetime_play_minutes,
+        sum(
+            case
+                when crashed_flag = false
+                    and duration_seconds between 1 and 21600
+                then duration_minutes
+                else 0
+            end
+        )                                                as lifetime_play_minutes,
         count(distinct title_id)                          as distinct_titles_played,
         MIN(session_start_at)                             as first_session_at,
         max(session_start_at)                             as last_session_at

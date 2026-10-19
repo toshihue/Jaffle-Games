@@ -236,6 +236,9 @@ models:
         data_type: varchar
         constraints: [type: not_null]
         data_tests: [unique, not_null]
+        entity:
+          type: primary
+          name: player
       - name: registered_at
         description: アカウント登録タイムスタンプ（UTC）。
         data_type: timestamp_ntz
@@ -243,6 +246,9 @@ models:
       - name: registration_cohort_month
         description: プレイヤーが登録した月。リテンション分析のコホートキー。
         data_type: date
+        dimension:
+          type: time
+        granularity: month
       - name: country_code
         description: 整形済みアカウントISO国コード。
         data_type: varchar
@@ -252,6 +258,8 @@ models:
       - name: acquisition_channel
         description: プレイヤーを獲得した正規化チャネル。CACとチャネル別リテンションの分析軸。
         data_type: varchar
+        dimension:
+          type: categorical
         data_tests:
           - accepted_values:
               arguments:
@@ -285,8 +293,10 @@ models:
         description: クラッシュとアイドル状態の外れ値を除外したセッション数。クリーンなエンゲージメントの分母。
         data_type: integer
       - name: lifetime_play_minutes
-        description: 有効な総プレイ時間（分）。
+        description: クラッシュしていない妥当なセッションの総プレイ時間（分）。
         data_type: number(12,2)
+        dimension:
+          type: categorical
       - name: distinct_titles_played
         description: プレイヤーがプレイした重複しないタイトル数。
         data_type: integer
@@ -344,6 +354,18 @@ models:
           行動ベースの離脱フラグ。分析基準日時点でプレイヤーの最終セッションが離脱閾値
           （{{ var('churn_days_threshold') }}日）より古い場合にtrue。
         data_type: boolean
+    semantic_model:
+      enabled: true
+      name: dim_players
+    agg_time_dimension: registration_cohort_month
+    metrics:
+      - name: players_with_60_plus_play_minutes
+        label: 60分以上プレイしたプレイヤー数
+        description: 有効な生涯プレイ時間が60分以上のユニークプレイヤー数。
+        type: simple
+        filter: "{{ Dimension('player__lifetime_play_minutes') }} >= 60"
+        agg: count_distinct
+        expr: player_id
 
   # ====================================================================================
   # FACTS
