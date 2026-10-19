@@ -9,3 +9,5 @@ profiles.yml
 setup/rsa_key*
 .venv/
 package-lock.yml
+
+.dbt-wizard-owner
