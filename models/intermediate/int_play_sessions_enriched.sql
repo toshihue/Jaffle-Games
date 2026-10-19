@@ -66,9 +66,13 @@ select
 
     round(duration_seconds / 60.0, 2) as duration_minutes,
 
-    -- A session is valid for engagement metrics when it closed cleanly and has a sane length.
-    -- Excludes the 4 null-end (crash) rows and the 2 multi-hour idle outliers (> 6 hours).
-    (duration_seconds is not null and duration_seconds between 1 and 21600) as is_valid_session,
+    -- A session is valid for engagement metrics when it is not flagged as crashed and has a sane length.
+    -- Excludes explicitly flagged crashes, null-duration rows, and multi-hour idle outliers (> 6 hours).
+    (
+        not coalesce(crashed_flag, false)
+        and duration_seconds is not null
+        and duration_seconds between 1 and 21600
+    ) as is_valid_session,
 
     cast(date_trunc('month', registered_at) as date) as registration_cohort_month,
     cast(date_trunc('month', session_start_at) as date) as session_month,
