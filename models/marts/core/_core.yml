@@ -429,8 +429,10 @@ models:
       - name: session_duration_minutes
         description: セッション時間（分）。
         data_type: number(12,2)
+        dimension:
+          type: categorical
       - name: is_valid_session
-        description: エンゲージメント指標に使用する正常なセッションの場合にtrue。クラッシュとアイドル状態の外れ値を除外。
+        description: エンゲージメント指標に使用する正常なセッションの場合にtrue。クラッシュフラグ、継続時間null、6時間超のアイドル状態の外れ値を除外。
         data_type: boolean
         dimension:
           type: categorical
@@ -509,6 +511,13 @@ models:
         expr: "case when is_valid_session then 1 else 0 end"
         type: simple
         hidden: true
+      - name: one_hour_plus_players
+        label: 1時間以上プレイしたプレイヤー数
+        description: 有効セッションが60分以上だったユニークプレイヤー数。
+        type: simple
+        filter: "{{ Dimension('session__is_valid_session') }} = true and {{ Dimension('session__session_duration_minutes') }} >= 60"
+        agg: count_distinct
+        expr: player_id
       - name: play_minutes
         label: 有効プレイ時間（分）
         description: 有効なプレイ時間の合計（分）。
