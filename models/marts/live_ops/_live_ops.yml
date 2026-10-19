@@ -3,85 +3,85 @@ version: 2
 models:
   - name: mart_live_ops_health
     description: >
-      Release health for live ops: matched 10-day before/after windows for engagement, crash
-      rate, session length and net revenue per active player, plus engineering execution and a
-      regressed_release flag. Surfaces the engineered bad major and its rollback.
+      ライブ運用向けのリリース健全性。エンゲージメント、クラッシュ率、セッション時間、
+      アクティブプレイヤー1人あたり純収益についてリリース前後10日間を比較し、開発実績と
+      regressed_releaseフラグも持つ。設計上の不良メジャーリリースとロールバックを検出する。
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [release_id]
     columns:
       - name: release_id
-        description: Release summarized.
+        description: 集計対象のリリース。
         data_tests:
           - not_null
           - unique
           - relationships:
               arguments: { to: ref('fct_releases'), field: release_id }
       - name: title_id
-        description: Title the release shipped for.
+        description: リリースが配信されたタイトル。
         data_tests:
           - relationships:
               arguments: { to: ref('dim_titles'), field: title_id }
       - name: title_name
-        description: Player-facing title name.
+        description: プレイヤー向けのタイトル名。
       - name: lifecycle_stage
-        description: Title's lifecycle stage, for context.
+        description: コンテキストとしてのタイトルのライフサイクル段階。
       - name: app_version
-        description: Semantic version shipped.
+        description: 配信されたセマンティックバージョン。
       - name: released_date
-        description: Release date.
+        description: リリース日。
       - name: release_type
-        description: major, minor, hotfix, content_drop or event.
+        description: major、minor、hotfix、content_drop、eventのいずれかのリリース種別。
       - name: is_rollback
-        description: True if the release rolled back a prior one.
+        description: リリースが以前のリリースをロールバックした場合にtrue。
       - name: dev_days_estimated
-        description: Engineering days budgeted.
+        description: 予算として見積もった開発日数。
       - name: dev_days_actual
-        description: Engineering days spent.
+        description: 実際に費やした開発日数。
       - name: dev_days_variance
-        description: Actual minus estimated dev days.
+        description: 実績開発日数から見積開発日数を引いた差分。
       - name: dev_days_variance_pct
-        description: Dev-day variance as a fraction of the estimate.
+        description: 見積に対する開発日数差分の割合。
       - name: is_over_budget
-        description: True when the release took longer than estimated.
+        description: リリースに見積以上の開発日数を要した場合にtrue。
       - name: qa_bug_count
-        description: QA-logged bugs for the release.
+        description: リリースに紐づくQA起票バグ数。
       - name: sessions_10d_before
-        description: Sessions in the 10 days before release.
+        description: リリース前10日間のセッション数。
       - name: sessions_10d_after
-        description: Sessions in the 10 days after release.
+        description: リリース後10日間のセッション数。
       - name: session_count_delta
-        description: After-minus-before session count.
+        description: リリース後セッション数からリリース前セッション数を引いた差分。
       - name: active_players_10d_before
-        description: Active players in the 10 days before release.
+        description: リリース前10日間のアクティブプレイヤー数。
       - name: active_players_10d_after
-        description: Active players in the 10 days after release.
+        description: リリース後10日間のアクティブプレイヤー数。
       - name: active_players_delta
-        description: After-minus-before active players.
+        description: リリース後アクティブプレイヤー数からリリース前を引いた差分。
       - name: avg_minutes_10d_before
-        description: Average valid session length before release (minutes).
+        description: リリース前の有効セッション平均時間（分）。
       - name: avg_minutes_10d_after
-        description: Average valid session length after release (minutes).
+        description: リリース後の有効セッション平均時間（分）。
       - name: avg_minutes_delta
-        description: Change in average session length across the release.
+        description: リリース前後における平均セッション時間の差分。
       - name: crash_rate_10d_before
-        description: Crash rate before release (0-1).
+        description: リリース前のクラッシュ率（0〜1）。
       - name: crash_rate_10d_after
-        description: Crash rate after release (0-1).
+        description: リリース後のクラッシュ率（0〜1）。
       - name: crash_rate_delta
-        description: Change in crash rate across the release — the bad-build signal.
+        description: リリース前後のクラッシュ率の差分。不良ビルドのシグナル。
       - name: net_revenue_10d_before
-        description: Net revenue in the 10 days before release.
+        description: リリース前10日間の純収益。
       - name: net_revenue_10d_after
-        description: Net revenue in the 10 days after release.
+        description: リリース後10日間の純収益。
       - name: net_rev_per_active_before
-        description: Net revenue per active player before release.
+        description: リリース前のアクティブプレイヤー1人あたり純収益。
       - name: net_rev_per_active_after
-        description: Net revenue per active player after release.
+        description: リリース後のアクティブプレイヤー1人あたり純収益。
       - name: made_engagement_worse
-        description: True when sessions fell or crash rate rose materially after release.
+        description: リリース後にセッション数が減少するかクラッシュ率が大きく上昇した場合にtrue。
       - name: regressed_release
         description: >
-          Overall regression flag — engagement down, crash rate above 15%, or a >30% dev-day
-          overrun. The one column to sort by to find bad releases.
+          総合的な劣化フラグ。エンゲージメント低下、クラッシュ率15%超、または開発日数30%超過のいずれか。
+          不良リリースを見つける際に並べ替える主要カラム。

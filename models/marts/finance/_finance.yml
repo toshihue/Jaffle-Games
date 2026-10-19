@@ -3,52 +3,52 @@ version: 2
 models:
   - name: mart_monetization
     description: >
-      Monetization at title x purchase-category x month for finance: revenue by what was sold,
-      with attach rate, first-purchase conversion and refund rate. premium unit sales appear as
-      the premium_base category; SKU-backed sales use their SKU category.
+      財務向けのタイトル×購入カテゴリ×月次の収益化集計。販売内容別の収益に加え、
+      アタッチ率、初回購入転換率、返金率を含む。プレミアム本体販売はpremium_baseカテゴリ、
+      SKUに紐づく販売は各SKUカテゴリとして扱う。
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [title_id, purchase_category, activity_month]
     columns:
       - name: title_id
-        description: Title the sales belong to.
+        description: 売上が帰属するタイトル。
         data_tests:
           - not_null
           - relationships:
               arguments: { to: ref('dim_titles'), field: title_id }
       - name: title_name
-        description: Player-facing title name.
+        description: プレイヤー向けのタイトル名。
       - name: purchase_category
-        description: What was sold — premium_base, currency_pack, cosmetic, battle_pass, or expansion.
+        description: 販売内容。premium_base、currency_pack、cosmetic、battle_pass、expansionのいずれか。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['premium_base', 'currency_pack', 'cosmetic', 'battle_pass', 'expansion', 'other']
       - name: activity_month
-        description: Month of the transactions (first of month).
+        description: 取引月（月初日）。
         data_tests: [not_null]
       - name: gross_revenue_usd
-        description: Gross revenue from sales (excludes refunds/chargebacks).
+        description: 販売による売上総額（返金・チャージバックを除く）。
       - name: net_revenue_usd
-        description: Net revenue including the effect of refunds/chargebacks.
+        description: 返金・チャージバックの影響を含む純収益。
       - name: studio_net_revenue_usd
-        description: Net revenue after storefront fees.
+        description: ストアフロント手数料控除後の純収益。
       - name: refund_gross_usd
-        description: Gross value of refunds and chargebacks in the category-month.
+        description: カテゴリ・月次における返金とチャージバックの総額。
       - name: purchase_count
-        description: Number of sale transactions (excludes reversals).
+        description: 販売取引数（取消取引を除く）。
       - name: refund_count
-        description: Number of refund/chargeback transactions.
+        description: 返金・チャージバック取引数。
       - name: paying_players
-        description: Distinct players with a positive-net purchase in the category-month.
+        description: カテゴリ・月次で純購入額が正の重複しないプレイヤー数。
       - name: first_purchases
-        description: Transactions flagged as the player's first acquisition.
+        description: プレイヤーの初回獲得としてフラグ付けされた取引数。
       - name: monthly_active_players
-        description: Title's monthly active players — the denominator for attach/conversion.
+        description: タイトルの月間アクティブプレイヤー数。アタッチ率と転換率の分母。
       - name: attach_rate
-        description: Paying players in the category over the title's monthly active players (0-1).
+        description: カテゴリの課金プレイヤー数をタイトルの月間アクティブプレイヤー数で割った割合（0〜1）。
       - name: first_purchase_conversion_rate
-        description: First-time buyers in the category over monthly active players (0-1).
+        description: カテゴリの初回購入者数を月間アクティブプレイヤー数で割った割合（0〜1）。
       - name: refund_rate
-        description: Refunded gross over gross sold in the category-month (0-1).
+        description: カテゴリ・月次の返金総額を販売総額で割った割合（0〜1）。
