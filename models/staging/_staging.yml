@@ -3,15 +3,15 @@ version: 2
 models:
   # ------------------------------------------------------------------------------------
   - name: stg_platforms
-    description: Cleaned storefront reference — one row per platform.
+    description: 整形済みストアフロント参照。1行が1プラットフォームを表す。
     columns:
       - name: platform_id
-        description: Storefront identifier (primary key).
+        description: ストアフロント識別子（主キー）。
         data_tests:
           - unique
           - not_null
       - name: platform_family
-        description: pc, console, or mobile.
+        description: pc、console、mobileのいずれかのプラットフォーム種別。
         data_tests:
           - not_null
           - accepted_values:
@@ -19,44 +19,44 @@ models:
                 values: ['pc', 'console', 'mobile']
 
       - name: storefront_fee_rate
-        description: Fraction of gross revenue retained by the storefront.
+        description: ストアフロントが保持する売上総額の割合。
         data_tests:
           - not_null
 
   # ------------------------------------------------------------------------------------
   - name: stg_titles
-    description: Cleaned title dimension — one row per game, types cast and text trimmed.
+    description: 整形済みタイトルディメンション。1行が1ゲームを表し、型変換とテキストのトリミングを行う。
     columns:
       - name: title_id
-        description: Title primary key.
+        description: タイトルの主キー。
         data_tests:
           - unique
           - not_null
       - name: title_name
-        description: Player-facing title name.
+        description: プレイヤー向けのタイトル名。
         data_tests:
           - not_null
       - name: monetization_model
-        description: premium, f2p, or premium_plus_dlc.
+        description: premium、f2p、premium_plus_dlcのいずれかの収益化モデル。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['premium', 'f2p', 'premium_plus_dlc']
       - name: launch_date
-        description: Worldwide launch date.
+        description: 全世界での発売日。
         data_tests:
           - not_null
       - name: is_live_service
-        description: Whether the title is operated as a live-service game.
+        description: タイトルがライブサービス型ゲームとして運営されているか。
         data_tests:
           - not_null
 
   # ------------------------------------------------------------------------------------
   - name: stg_title_platforms
-    description: Cleaned title/platform release bridge.
+    description: 整形済みタイトルとプラットフォームの発売ブリッジ。
     columns:
       - name: title_id
-        description: Foreign key to stg_titles.
+        description: stg_titlesへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -64,7 +64,7 @@ models:
                 to: ref('stg_titles')
                 field: title_id
       - name: platform_id
-        description: Foreign key to stg_platforms.
+        description: stg_platformsへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -72,7 +72,7 @@ models:
                 to: ref('stg_platforms')
                 field: platform_id
       - name: platform_launch_date
-        description: Per-platform launch date.
+        description: プラットフォームごとの発売日。
         data_tests:
           - not_null
     data_tests:
@@ -82,15 +82,15 @@ models:
 
   # ------------------------------------------------------------------------------------
   - name: stg_skus
-    description: Cleaned SKU dimension — one row per purchasable item.
+    description: 整形済みSKUディメンション。1行が1つの購入可能アイテムを表す。
     columns:
       - name: sku_id
-        description: SKU primary key.
+        description: SKUの主キー。
         data_tests:
           - unique
           - not_null
       - name: title_id
-        description: Foreign key to stg_titles.
+        description: stg_titlesへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -98,45 +98,45 @@ models:
                 to: ref('stg_titles')
                 field: title_id
       - name: sku_category
-        description: cosmetic, currency_pack, expansion, or battle_pass.
+        description: cosmetic、currency_pack、expansion、battle_passのいずれかのSKUカテゴリ。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['cosmetic', 'currency_pack', 'expansion', 'battle_pass']
       - name: price_usd
-        description: SKU list price in USD.
+        description: SKUの定価（USD）。
         data_tests:
           - not_null
 
   # ------------------------------------------------------------------------------------
   - name: stg_players
     description: >
-      Cleaned player dimension. Country codes are trimmed/uppercased and the acquisition
-      channel is normalized (the raw "Paid Social" variant collapses into paid_social).
+      整形済みプレイヤーディメンション。国コードをトリミングして大文字化し、獲得チャネルを正規化する。
+      生データの「Paid Social」はpaid_socialに統合される。
     columns:
       - name: player_id
-        description: Player primary key.
+        description: プレイヤーの主キー。
         data_tests:
           - unique
           - not_null
       - name: registered_at
-        description: Registration timestamp (UTC).
+        description: 登録タイムスタンプ（UTC）。
         data_tests:
           - not_null
       - name: acquisition_channel
-        description: Normalized acquisition channel.
+        description: 正規化済みの獲得チャネル。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
       - name: account_status
-        description: active, dormant, churned, or banned.
+        description: active、dormant、churned、bannedのいずれかのアカウント状態。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['active', 'dormant', 'churned', 'banned']
       - name: acquisition_campaign_id
-        description: Campaign that acquired the player, if paid. Nullable.
+        description: プレイヤーを獲得したキャンペーン。広告経由の場合に設定され、nullの場合がある。
         data_tests:
           - relationships:
               arguments:
@@ -147,15 +147,15 @@ models:
 
   # ------------------------------------------------------------------------------------
   - name: stg_releases
-    description: Cleaned release history — one row per patch/content drop.
+    description: 整形済みリリース履歴。1行が1つのパッチまたはコンテンツドロップを表す。
     columns:
       - name: release_id
-        description: Release primary key.
+        description: リリースの主キー。
         data_tests:
           - unique
           - not_null
       - name: title_id
-        description: Foreign key to stg_titles.
+        description: stg_titlesへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -163,30 +163,29 @@ models:
                 to: ref('stg_titles')
                 field: title_id
       - name: release_type
-        description: major, minor, hotfix, content_drop, or event.
+        description: major、minor、hotfix、content_drop、eventのいずれかのリリース種別。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['major', 'minor', 'hotfix', 'content_drop', 'event']
       - name: released_at
-        description: Release timestamp (UTC).
+        description: リリースタイムスタンプ（UTC）。
         data_tests:
           - not_null
 
   # ------------------------------------------------------------------------------------
   - name: stg_play_sessions
     description: >
-      Cleaned session events, deduplicated to one row per session_id (the raw feed carries
-      3 duplicate rows). Country codes cleaned. Null ends and duration outliers are left
-      intact here and handled as business logic in fct_play_sessions.
+      整形済みセッションイベント。生フィードに3件の重複行があるため、session_idごとに1行へ重複排除する。
+      国コードを整形し、終了時刻がnullの行と時間の外れ値は保持したまま、fct_play_sessionsで業務ロジックとして処理する。
     columns:
       - name: session_id
-        description: Session primary key (unique after dedupe).
+        description: セッションの主キー（重複排除後は一意）。
         data_tests:
           - unique
           - not_null
       - name: player_id
-        description: Foreign key to stg_players.
+        description: stg_playersへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -194,7 +193,7 @@ models:
                 to: ref('stg_players')
                 field: player_id
       - name: title_id
-        description: Foreign key to stg_titles.
+        description: stg_titlesへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -202,7 +201,7 @@ models:
                 to: ref('stg_titles')
                 field: title_id
       - name: platform_id
-        description: Foreign key to stg_platforms.
+        description: stg_platformsへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -210,30 +209,29 @@ models:
                 to: ref('stg_platforms')
                 field: platform_id
       - name: network_type
-        description: Network the session used.
+        description: セッションで使用されたネットワーク。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['wifi', 'cellular', 'ethernet']
       - name: session_start_at
-        description: Session start (UTC).
+        description: セッション開始時刻（UTC）。
         data_tests:
           - not_null
 
   # ------------------------------------------------------------------------------------
   - name: stg_transactions
     description: >
-      Cleaned transactions. transaction_at is converted from America/New_York to UTC;
-      the raw local time is preserved as transaction_at_local. Amounts remain positive —
-      sign normalization happens in int_transactions.
+      整形済み取引。transaction_atはAmerica/New_YorkからUTCへ変換し、元の現地時刻をtransaction_at_localとして保持する。
+      金額は正数のまま保持し、符号の正規化はint_transactionsで行う。
     columns:
       - name: transaction_id
-        description: Transaction primary key.
+        description: 取引の主キー。
         data_tests:
           - unique
           - not_null
       - name: player_id
-        description: Foreign key to stg_players.
+        description: stg_playersへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -241,7 +239,7 @@ models:
                 to: ref('stg_players')
                 field: player_id
       - name: title_id
-        description: Foreign key to stg_titles.
+        description: stg_titlesへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -249,7 +247,7 @@ models:
                 to: ref('stg_titles')
                 field: title_id
       - name: sku_id
-        description: Foreign key to stg_skus. Null for premium (base-game) purchases.
+        description: stg_skusへの外部キー。プレミアムの本体購入ではnull。
         data_tests:
           - relationships:
               arguments:
@@ -258,33 +256,33 @@ models:
               config:
                 where: "sku_id is not null"
       - name: transaction_type
-        description: premium_purchase, iap, season_pass, dlc, refund, or chargeback.
+        description: premium_purchase、iap、season_pass、dlc、refund、chargebackのいずれかの取引種別。
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: ['premium_purchase', 'iap', 'season_pass', 'dlc', 'refund', 'chargeback']
       - name: payment_method
-        description: Payment instrument used.
+        description: 使用された決済手段。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['card', 'paypal', 'apple_pay', 'google_play', 'platform_wallet']
 
       - name: gross_amount_usd
-        description: Gross amount in USD (positive).
+        description: 売上総額（USD、正数）。
         data_tests:
           - not_null
 
   # ------------------------------------------------------------------------------------
   - name: stg_high_scores
-    description: Cleaned leaderboard submissions.
+    description: 整形済みリーダーボード投稿。
     columns:
       - name: score_id
-        description: Submission primary key.
+        description: 投稿の主キー。
         data_tests: [unique, not_null]
       - name: player_id
-        description: Foreign key to stg_players.
+        description: stg_playersへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -292,7 +290,7 @@ models:
                 to: ref('stg_players')
                 field: player_id
       - name: title_id
-        description: Foreign key to stg_titles.
+        description: stg_titlesへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -302,13 +300,13 @@ models:
 
   # ------------------------------------------------------------------------------------
   - name: stg_reviews
-    description: Cleaned store reviews.
+    description: 整形済みストアレビュー。
     columns:
       - name: review_id
-        description: Review primary key.
+        description: レビューの主キー。
         data_tests: [unique, not_null]
       - name: player_id
-        description: Foreign key to stg_players.
+        description: stg_playersへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -316,7 +314,7 @@ models:
                 to: ref('stg_players')
                 field: player_id
       - name: title_id
-        description: Foreign key to stg_titles.
+        description: stg_titlesへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -324,7 +322,7 @@ models:
                 to: ref('stg_titles')
                 field: title_id
       - name: rating
-        description: Star rating, 1-5.
+        description: 星評価（1〜5）。
         data_tests:
           - not_null
           - accepted_values:
@@ -334,13 +332,13 @@ models:
 
   # ------------------------------------------------------------------------------------
   - name: stg_marketing_spend
-    description: Cleaned weekly marketing spend and acquisition funnel.
+    description: 整形済みの週次マーケティング費用と獲得ファネル。
     columns:
       - name: campaign_id
-        description: Campaign identifier (not unique — one row per campaign-week).
+        description: キャンペーン識別子（キャンペーン週ごとに1行のため一意ではない）。
         data_tests: [not_null]
       - name: title_id
-        description: Foreign key to stg_titles.
+        description: stg_titlesへの外部キー。
         data_tests:
           - not_null
           - relationships:
@@ -348,13 +346,13 @@ models:
                 to: ref('stg_titles')
                 field: title_id
       - name: channel
-        description: Paid acquisition channel.
+        description: 有料獲得チャネル。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['paid_social', 'influencer', 'store_featured', 'cross_promo']
       - name: week_start_date
-        description: Monday-anchored spend week.
+        description: 月曜日始まりの費用集計週。
         data_tests: [not_null]
     data_tests:
       - dbt_utils.unique_combination_of_columns:

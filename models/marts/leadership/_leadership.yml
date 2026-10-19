@@ -3,118 +3,117 @@ version: 2
 models:
   - name: mart_title_performance
     description: >
-      Title x month scorecard for leadership and product: engagement, revenue and reception
-      per title per month, with month-over-month deltas and a has_sufficient_volume flag so
-      thin cells are not read as signal. Traces to leadership (invest / sunset decisions).
+      経営層・プロダクト向けのタイトル×月次スコアカード。タイトルごとの月次エンゲージメント、
+      収益、評価に加え、前月差分とhas_sufficient_volumeフラグを持つため、データ量の少ないセルを
+      シグナルとして誤読しない。投資・終了判断などの経営判断に利用する。
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [title_id, activity_month]
     columns:
       - name: title_id
-        description: Title the row summarizes.
+        description: 行が集計するタイトル。
         data_tests:
           - not_null
           - relationships:
               arguments: { to: ref('dim_titles'), field: title_id }
       - name: title_name
-        description: Player-facing title name.
+        description: プレイヤー向けのタイトル名。
       - name: monetization_model
-        description: premium, f2p, or premium_plus_dlc.
+        description: premium、f2p、premium_plus_dlcのいずれかの収益化モデル。
       - name: lifecycle_stage
-        description: Current lifecycle stage of the title (from dim_titles), for quick context.
+        description: dim_titlesから取得したタイトルの現在のライフサイクル段階。
       - name: activity_month
-        description: Month the metrics cover (first of month).
+        description: 指標が対象とする月（月初日）。
         data_tests: [not_null]
       - name: monthly_active_players
-        description: Distinct players with a session for this title in the month.
+        description: 当月にこのタイトルのセッションがあった重複しないプレイヤー数。
       - name: sessions
-        description: All sessions for the title in the month.
+        description: 当月のタイトルの全セッション数。
       - name: valid_sessions
-        description: Sessions excluding crashes and idle outliers.
+        description: クラッシュとアイドル状態の外れ値を除外したセッション数。
       - name: sessions_per_active_player
-        description: Valid sessions divided by monthly active players — engagement intensity.
+        description: 有効セッション数を月間アクティブプレイヤー数で割ったエンゲージメント強度。
       - name: avg_session_minutes
-        description: Average valid session length in minutes.
+        description: 有効セッションの平均時間（分）。
       - name: net_revenue_usd
-        description: Net revenue attributed to the title in the month (all streams, less reversals).
+        description: 当月にタイトルへ帰属する純収益（全ストリーム、取消取引控除後）。
       - name: studio_net_revenue_usd
-        description: Net revenue after storefront fees — what the studio keeps.
+        description: ストアフロント手数料控除後の純収益。スタジオの実収益。
       - name: paying_players
-        description: Distinct players with a positive-net transaction on the title in the month.
+        description: 当月にタイトルの純取引額が正だった重複しないプレイヤー数。
       - name: arpu_usd
-        description: Average revenue per monthly active player.
+        description: 月間アクティブプレイヤー1人あたりの平均収益（USD）。
       - name: arppu_usd
-        description: Average revenue per paying player.
+        description: 課金プレイヤー1人あたりの平均収益（USD）。
       - name: payer_conversion_rate
-        description: Paying players over monthly active players (0-1).
+        description: 課金プレイヤー数を月間アクティブプレイヤー数で割った割合（0〜1）。
       - name: avg_review_rating
-        description: Average rating of reviews left in the month (nullable when none).
+        description: 当月に投稿されたレビューの平均評価。レビューがない場合はnull。
       - name: review_count
-        description: Reviews left for the title in the month.
+        description: 当月にタイトルへ投稿されたレビュー数。
       - name: map_mom_delta
-        description: Change in monthly active players versus the prior month for this title.
+        description: このタイトルの月間アクティブプレイヤー数の前月差分。
       - name: net_revenue_mom_delta
-        description: Change in net revenue versus the prior month for this title.
+        description: このタイトルの純収益の前月差分。
       - name: has_sufficient_volume
         description: >
-          True when monthly active players meets the minimum threshold
-          ({{ var('min_active_players_threshold') }}); false marks statistically thin cells.
+          月間アクティブプレイヤー数が最小閾値（{{ var('min_active_players_threshold') }}）以上の場合にtrue。
+          falseは統計的にデータ量が少ないセルを示す。
 
   - name: mart_studio_kpis
     description: >
-      Studio x month executive summary: actives, revenue by stream, revenue concentration,
-      acquisition and blended CAC, and portfolio-health counts. The board-deck grain for
-      leadership.
+      スタジオ×月次の経営サマリー。アクティブ数、ストリーム別収益、収益集中度、
+      獲得とブレンデッドCAC、ポートフォリオ健全性の件数をまとめる。経営会議資料の粒度。
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [activity_month]
     columns:
       - name: activity_month
-        description: Month summarized (first of month).
+        description: 集計対象月（月初日）。
         data_tests: [not_null, unique]
       - name: monthly_active_players
-        description: Distinct players active across the whole portfolio in the month.
+        description: 当月にポートフォリオ全体でアクティブだった重複しないプレイヤー数。
       - name: sessions
-        description: All sessions across the portfolio in the month.
+        description: 当月のポートフォリオ全体の全セッション数。
       - name: new_registrations
-        description: New player accounts registered in the month.
+        description: 当月に登録された新規プレイヤーアカウント数。
       - name: net_revenue_usd
-        description: Total net revenue across all titles and streams (less reversals).
+        description: 全タイトル・全ストリームの純収益合計（取消取引控除後）。
       - name: studio_net_revenue_usd
-        description: Total net revenue after storefront fees.
+        description: ストアフロント手数料控除後の純収益合計。
       - name: net_revenue_premium_usd
-        description: Net revenue from premium unit sales.
+        description: プレミアム本体販売による純収益。
       - name: net_revenue_iap_usd
-        description: Net revenue from in-app purchases.
+        description: アプリ内購入による純収益。
       - name: net_revenue_season_pass_usd
-        description: Net revenue from season passes.
+        description: シーズンパスによる純収益。
       - name: net_revenue_dlc_usd
-        description: Net revenue from DLC / expansions.
+        description: DLCまたは拡張コンテンツによる純収益。
       - name: refunds_chargebacks_usd
-        description: Net effect of refunds and chargebacks (negative).
+        description: 返金とチャージバックの純影響額（負数）。
       - name: paying_players
-        description: Distinct players with a positive-net transaction in the month.
+        description: 当月に純取引額が正だった重複しないプレイヤー数。
       - name: payer_conversion_rate
-        description: Paying players over monthly active players (0-1).
+        description: 課金プレイヤー数を月間アクティブプレイヤー数で割った割合（0〜1）。
       - name: arpu_usd
-        description: Net revenue per monthly active player.
+        description: 月間アクティブプレイヤー1人あたりの純収益（USD）。
       - name: top_title_revenue_share
-        description: Share of the month's net revenue from the single top-grossing title (concentration).
+        description: 月次純収益に占める売上最大タイトルの割合（収益集中度）。
       - name: top_player_revenue_share
-        description: Share of the month's net revenue from the single top-spending player (whale concentration).
+        description: 月次純収益に占める最大支出プレイヤーの割合（ホエール集中度）。
       - name: marketing_spend_usd
-        description: Total marketing spend in the month.
+        description: 当月のマーケティング費用合計。
       - name: marketing_installs
-        description: Attributed installs from marketing in the month.
+        description: 当月にマーケティングへ帰属するインストール数。
       - name: blended_cac_usd
-        description: Blended cost of acquisition — marketing spend over new registrations.
+        description: ブレンデッド顧客獲得単価。マーケティング費用を新規登録数で割った値。
       - name: titles_total
-        description: Count of titles in the portfolio (evaluated at the analysis date).
+        description: ポートフォリオ内のタイトル数（分析基準日で評価）。
       - name: titles_in_launch
-        description: Titles currently in their launch window.
+        description: 現在ローンチ期間にあるタイトル数。
       - name: titles_declining
-        description: Titles currently in the declining stage.
+        description: 現在declining段階にあるタイトル数。
       - name: titles_sunset_candidate
-        description: Titles flagged as sunset candidates.
+        description: 終了候補としてフラグ付けされたタイトル数。

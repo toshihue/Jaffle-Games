@@ -3,30 +3,182 @@ version: 2
 models:
   - name: int_transactions
     description: >
-      Transaction-grain business logic: signed net amounts (refunds/chargebacks negated),
-      studio net revenue after storefront fees, and a revenue-stream classification. Reused
-      by fct_transactions and every finance/monetization mart so sign and stream logic agree.
+      取引粒度の業務ロジック。返金・チャージバックを負数化した純額、ストアフロント手数料控除後の
+      スタジオ純収益、収益ストリーム分類を提供する。符号とストリームのロジックを統一するため、
+      fct_transactionsとすべての財務・収益化マートで再利用する。
+    columns:
+      - name: transaction_id
+        description: stg_transactionsから引き継いだ取引識別子。
+      - name: player_id
+        description: 取引に紐づくプレイヤー。
+      - name: title_id
+        description: 取引に紐づくタイトル。
+      - name: platform_id
+        description: 取引に紐づくストアフロント。
+      - name: sku_id
+        description: 購入されたSKU。プレミアムの本体購入ではnull。
+      - name: transaction_at
+        description: UTCの取引タイムスタンプ。
+      - name: transaction_at_local
+        description: America/New_Yorkの現地時刻で保持した元の取引タイムスタンプ。
+      - name: transaction_type
+        description: premium_purchase、iap、season_pass、dlc、refund、chargebackなどの取引種別。
+      - name: currency_code
+        description: 取引に記録された通貨コード。
+      - name: payment_method
+        description: 取引に使用された決済手段。
+      - name: is_first_purchase
+        description: プレイヤーの初回獲得取引である場合にtrue。
+      - name: gross_amount_usd
+        description: 符号を正規化する前の取引総額（USD）。
+      - name: platform_fee_usd
+        description: 符号を正規化する前のストアフロント手数料（USD）。
+      - name: net_amount_usd
+        description: 符号を正規化した純取引額（USD）。返金とチャージバックは負数。
+      - name: signed_platform_fee_usd
+        description: 符号を正規化したストアフロント手数料（USD）。返金とチャージバックは負数。
+      - name: studio_net_revenue_usd
+        description: ストアフロント手数料控除後にスタジオが認識する符号付き収益。
+      - name: revenue_stream_group
+        description: live_service、catalog、reversalのいずれかに分類した収益ストリーム。
+      - name: is_live_service_revenue
+        description: iap、season_pass、およびそれらの返金・チャージバックに該当する場合にtrue。
 
   - name: int_play_sessions_enriched
     description: >
-      Session-grain enrichment: duration in minutes, a validity flag excluding idle outliers
-      and null-end crashes, the release in effect at session time, the registration cohort
-      month, and the week offset from registration used for retention.
+      セッション粒度の拡張。分単位の時間、アイドル状態の外れ値と終了時刻nullのクラッシュを除外する
+      有効性フラグ、セッション時点の適用リリース、登録コホート月、リテンションに使用する登録からの週次オフセットを持つ。
+    columns:
+      - name: session_id
+        description: stg_play_sessionsから引き継いだセッション識別子。
+      - name: player_id
+        description: セッションをプレイしたプレイヤー。
+      - name: title_id
+        description: セッション中にプレイされたタイトル。
+      - name: platform_id
+        description: セッションが実行されたストアフロント。
+      - name: session_start_at
+        description: UTCのセッション開始タイムスタンプ。
+      - name: session_end_at
+        description: UTCのセッション終了タイムスタンプ。クライアントが終了前にクラッシュした場合はnull。
+      - name: duration_seconds
+        description: 元のセッション時間（秒）。
+      - name: device_model
+        description: セッションから報告されたデバイスまたはハードウェアのモデル。
+      - name: app_version
+        description: セッションから報告されたクライアントアプリケーションのバージョン。
+      - name: country_code
+        description: セッション発生国を表す整形済みISO国コード。
+      - name: levels_completed
+        description: セッション中に完了したレベルまたはマッチ数。
+      - name: crashed_flag
+        description: クライアントがクラッシュを報告した場合にtrue。
+      - name: network_type
+        description: セッションで使用されたネットワーク。
+      - name: release_id_in_effect
+        description: セッション開始時点でタイトルに適用されていたリリース。リリース前の場合はnull。
+      - name: release_version_in_effect
+        description: セッション開始時点でタイトルに適用されていたアプリケーションバージョン。
+      - name: registered_at
+        description: UTCのプレイヤー登録タイムスタンプ。
+      - name: duration_minutes
+        description: 小数点以下2桁に丸めたセッション時間（分）。
+      - name: is_valid_session
+        description: 時間がnullではなく、1秒以上6時間以下のセッションである場合にtrue。
+      - name: registration_cohort_month
+        description: プレイヤーが登録した月。
+      - name: session_month
+        description: セッションが開始した月。
+      - name: session_week
+        description: セッションが開始した月曜日始まりの週。
+      - name: week_offset_from_registration
+        description: 登録からセッションまでに経過した週数。0は登録週。
+      - name: is_weekend_session
+        description: セッションが土曜日または日曜日に開始した場合にtrue。
 
   - name: int_player_spend
     description: >
-      Per-player monetization rollup. Derives payer_segment from lifetime live-service spend
-      (iap + season_pass, net of reversals) and reports lifetime net revenue across all streams.
+      プレイヤー単位の収益化集計。生涯ライブサービス支出（iap＋season_pass、取消取引控除後）から
+      payer_segmentを算出し、全ストリームの生涯純収益を提供する。
+    columns:
+      - name: player_id
+        description: プレイヤー識別子。
+      - name: live_service_net_usd
+        description: 返金・チャージバックを含む、iapとseason_passの生涯ライブサービス純支出。
+      - name: lifetime_net_revenue_usd
+        description: すべての取引ストリームにわたる生涯純収益。
+      - name: lifetime_studio_net_usd
+        description: ストアフロント手数料控除後にスタジオが保持する生涯収益。
+      - name: premium_net_usd
+        description: プレミアムタイトル購入による生涯純収益。
+      - name: iap_net_usd
+        description: アプリ内購入による生涯純収益。
+      - name: season_pass_net_usd
+        description: シーズンパスによる生涯純収益。
+      - name: dlc_net_usd
+        description: ダウンロードコンテンツによる生涯純収益。
+      - name: refunded_gross_usd
+        description: プレイヤーに対する返金とチャージバックの総額。
+      - name: lifetime_transactions
+        description: プレイヤーに記録された全取引数。
+      - name: first_purchase_at
+        description: プレイヤーの初回獲得取引のタイムスタンプ。存在しない場合はnull。
+      - name: payer_segment
+        description: 生涯ライブサービス純支出から算出した課金プレイヤー階層。
+      - name: is_payer
+        description: 生涯ライブサービス純支出がminnowの閾値以上の場合にtrue。
 
   - name: int_player_activity
     description: >
-      Per-player engagement rollup: lifetime and valid session counts, play minutes, first and
-      last session, favorite title and primary platform.
+      プレイヤー単位のエンゲージメント集計。生涯セッション数、有効セッション数、プレイ時間、
+      初回・最終セッション、お気に入りタイトル、主要プラットフォームを提供する。
+    columns:
+      - name: player_id
+        description: プレイヤー識別子。
+      - name: lifetime_sessions
+        description: プレイヤーに記録された全セッション数。
+      - name: lifetime_valid_sessions
+        description: クラッシュとアイドル状態の外れ値を除外した有効セッション数。
+      - name: lifetime_play_minutes
+        description: 有効な総プレイ時間（分）。
+      - name: distinct_titles_played
+        description: プレイヤーがプレイした重複しないタイトル数。
+      - name: first_session_at
+        description: プレイヤーの最初の記録済みセッションのタイムスタンプ。
+      - name: last_session_at
+        description: プレイヤーの最新の記録済みセッションのタイムスタンプ。
+      - name: favorite_title_id
+        description: プレイヤーのセッション数が最も多いタイトル。
+      - name: primary_platform_id
+        description: プレイヤーのセッション数が最も多いストアフロント。
 
   - name: int_title_activity
     description: >
-      Per-title engagement and reception rollup: lifetime sessions/players, recency windows
-      (60/90 day) against the analysis date, days since last session, and review aggregates.
+      タイトル単位のエンゲージメントと評価の集計。生涯セッション数・プレイヤー数、分析基準日に対する
+      直近期間（60日・90日）、最終セッションからの日数、レビュー集計を提供する。
+    columns:
+      - name: title_id
+        description: タイトル識別子。
+      - name: lifetime_sessions
+        description: タイトルに記録された全セッション数。
+      - name: lifetime_players
+        description: タイトルをプレイした重複しないプレイヤー数。
+      - name: first_session_at
+        description: タイトルの最も古い記録済みセッションのタイムスタンプ。
+      - name: last_session_at
+        description: タイトルの最新の記録済みセッションのタイムスタンプ。
+      - name: sessions_last_60d
+        description: 分析基準日時点の直近60日間におけるタイトルのセッション数。
+      - name: active_players_last_90d
+        description: 分析基準日時点の直近90日間にタイトルでアクティブだった重複しないプレイヤー数。
+      - name: avg_review_rating
+        description: タイトルに対するストアレビューの平均評価。
+      - name: review_count
+        description: タイトルに記録されたストアレビュー数。
+      - name: recommend_rate
+        description: タイトルを推奨するレビューの割合（0〜1）。
+      - name: days_since_last_session
+        description: タイトルの最新セッションから分析基準日までの日数。
 
 unit_tests:
   - name: test_int_transactions_signed_amounts_and_streams

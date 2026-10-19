@@ -7,3 +7,5 @@ dbt_internal_packages/
 .user.yml
 profiles.yml
 setup/rsa_key*
+.venv/
+package-lock.yml

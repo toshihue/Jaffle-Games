@@ -3,73 +3,73 @@ version: 2
 models:
   - name: mart_player_retention
     description: >
-      Cohort retention triangle at registration-cohort x acquisition-channel x week-offset.
-      Cohort size is on every row so rates are always read against their (small) denominator,
-      and is_observable marks cells whose week has not yet fully elapsed. Serves player
-      experience (where cohorts drop off) and the organic-vs-paid_social quality story.
+      登録コホート×獲得チャネル×週次オフセットのコホートリテンション三角表。
+      各行にコホートサイズを持つため、率を常にその分母に対して解釈できる。
+      is_observableは対象週がまだ完全に経過していないセルを示す。コホートの離脱箇所や
+      organicとpaid_socialの品質比較に利用する。
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [registration_cohort_month, acquisition_channel, week_offset]
     columns:
       - name: registration_cohort_month
-        description: Month the cohort registered.
+        description: コホートが登録した月。
         data_tests: [not_null]
       - name: acquisition_channel
-        description: Acquisition channel slice of the cohort.
+        description: コホートの獲得チャネル別区分。
         data_tests:
           - accepted_values:
               arguments:
                 values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
       - name: week_offset
-        description: Whole weeks since registration (0 = registration week).
+        description: 登録からの経過週数（0は登録週）。
         data_tests: [not_null]
       - name: cohort_size
-        description: Number of players in the cohort/channel — the denominator for every rate on the row.
+        description: コホート・チャネルのプレイヤー数。行内のすべての率の分母。
       - name: retained_players
-        description: Distinct players from the cohort/channel active in this week offset.
+        description: この週次オフセットでアクティブだったコホート・チャネルの重複しないプレイヤー数。
       - name: is_observable
         description: >
-          True when the week has fully elapsed as of the analysis date. When false the cell is
-          not yet measurable and retention_rate is null (late cohorts are not treated as churn).
+          分析基準日時点で対象週が完全に経過している場合にtrue。falseの場合はまだ測定できず、
+          retention_rateはnullとなる（新しいコホートを離脱とは扱わない）。
       - name: retention_rate
-        description: Retained players over cohort size (0-1); null when the cell is not observable.
+        description: 継続プレイヤー数をコホートサイズで割った割合（0〜1）。観測不能なセルではnull。
 
   - name: mart_player_leaderboard
     description: >
-      Cross-title player standings: each player's best legitimate score per leaderboard, with
-      rank and percentile within the leaderboard and globally. Cheat-flagged submissions are
-      excluded from standings but counted in flagged_submissions for anti-cheat visibility.
+      タイトル横断のプレイヤーランキング。各プレイヤーのリーダーボードごとの最高正当スコアと、
+      リーダーボード内および全体の順位・パーセンタイルを持つ。不正フラグ付き投稿は順位から除外し、
+      アンチチート可視化のためflagged_submissionsには計上する。
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [player_id, leaderboard_id]
     columns:
       - name: player_id
-        description: Player the standing belongs to.
+        description: ランキングが属するプレイヤー。
         data_tests:
           - not_null
           - relationships:
               arguments: { to: ref('dim_players'), field: player_id }
       - name: title_id
-        description: Title the leaderboard belongs to.
+        description: リーダーボードが属するタイトル。
         data_tests:
           - relationships:
               arguments: { to: ref('dim_titles'), field: title_id }
       - name: leaderboard_id
-        description: Leaderboard the standing is on.
+        description: ランキング対象のリーダーボード。
         data_tests: [not_null]
       - name: best_score
-        description: Player's highest legitimate (non-flagged) score on the leaderboard.
+        description: リーダーボードにおけるプレイヤーの最高正当スコア（不正フラグなし）。
       - name: legit_submissions
-        description: Count of the player's legitimate submissions to the leaderboard.
+        description: プレイヤーのリーダーボードへの正当な投稿数。
       - name: flagged_submissions
-        description: Count of the player's cheat-flagged submissions, excluded from ranking.
+        description: 不正フラグ付きでランキングから除外された投稿数。
       - name: rank_in_leaderboard
-        description: Rank of the player's best score within the leaderboard (1 = top), legit only.
+        description: リーダーボード内でのプレイヤー最高スコアの順位（1が最上位、正当スコアのみ）。
       - name: leaderboard_player_count
-        description: Number of ranked (legit) players on the leaderboard — the ranking denominator.
+        description: リーダーボードで順位付けされた正当プレイヤー数。順位の分母。
       - name: percentile_in_leaderboard
-        description: Percentile of the player's best score within the leaderboard (0-1).
+        description: リーダーボード内でのプレイヤー最高スコアのパーセンタイル（0〜1）。
       - name: percentile_global
-        description: Percentile of the player's best score across all leaderboards (0-1).
+        description: 全リーダーボードを通じたプレイヤー最高スコアのパーセンタイル（0〜1）。

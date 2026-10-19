@@ -5,46 +5,46 @@ models:
   # DIMENSIONS
   # ====================================================================================
   - name: dim_platforms
-    description: Conformed platform dimension — one row per storefront, with fee economics.
+    description: 整合済みプラットフォームディメンション。1行が1ストアフロントを表し、手数料の経済性を持つ。
 
     columns:
       - name: platform_id
-        description: Storefront identifier (primary key).
+        description: ストアフロント識別子（主キー）。
         data_type: varchar
         data_tests: [unique, not_null]
       - name: platform_family
-        description: Whether the storefront is pc, console or mobile — the level most portfolio cuts use.
+        description: ストアフロントの種別（pc、console、mobile）。ポートフォリオ分析で主に使用する分類。
         data_type: varchar
       - name: storefront_fee_rate
-        description: Share of gross revenue the storefront keeps; the lever behind studio net revenue.
+        description: ストアフロントが保持する売上総額の割合。スタジオ純収益の算定要素。
         data_type: number(4,3)
 
   # ------------------------------------------------------------------------------------
   - name: dim_skus
-    description: Conformed SKU dimension — one row per purchasable item, with its title.
+    description: 整合済みSKUディメンション。1行が1つの購入可能アイテムと所属タイトルを表す。
     config:
       contract:
         enforced: true
     columns:
       - name: sku_id
-        description: SKU identifier (primary key).
+        description: SKU識別子（主キー）。
         data_type: varchar
         constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: title_id
-        description: Title the SKU belongs to.
+        description: SKUが属するタイトル。
         data_type: varchar
         data_tests:
           - relationships:
               arguments: {to: ref('dim_titles'), field: title_id}
       - name: title_name
-        description: Name of the title the SKU belongs to, denormalized for convenience.
+        description: 利便性のため非正規化したSKU所属タイトル名。
         data_type: varchar
       - name: sku_name
-        description: Player-facing store name of the item.
+        description: プレイヤー向けストア上のアイテム名。
         data_type: varchar
       - name: sku_category
-        description: Item type — cosmetic, currency_pack, expansion or battle_pass.
+        description: アイテム種別。cosmetic、currency_pack、expansion、battle_passのいずれか。
         data_type: varchar
         data_tests:
           - accepted_values:
@@ -52,23 +52,23 @@ models:
                 values: ['cosmetic', 'currency_pack', 'expansion', 'battle_pass']
 
       - name: price_usd
-        description: Current list price of the item in USD.
+        description: アイテムの現在の定価（USD）。
         data_type: number(12,2)
       - name: is_active
-        description: Whether the item is currently sellable.
+        description: アイテムが現在販売可能か。
         data_type: boolean
       - name: first_available_date
-        description: Date the item first went on sale.
+        description: アイテムが初めて販売された日付。
         data_type: date
       - name: legacy_sku_id
-        description: Pre-migration storefront id for the item, kept for joins against older transactions.
+        description: 移行前のアイテムのストアフロントID。過去の取引との結合用に保持する。
         data_type: varchar
 
   # ------------------------------------------------------------------------------------
   - name: dim_dates
     description: >
-      Date spine covering the history window plus 90 days forward. Lets time-series marts
-      show months and weeks with zero activity instead of dropping them.
+      履歴期間とその後90日をカバーする日付スパイン。活動がない月や週を欠落させず、
+      時系列マートに表示できる。
     config:
       contract:
         enforced: true
@@ -76,75 +76,74 @@ models:
       standard_granularity_column: date_day
     columns:
       - name: date_day
-        description: Calendar day (primary key).
+        description: 暦日（主キー）。
         data_type: date
         constraints: [type: not_null]
         data_tests: [unique, not_null]
         granularity: day
       - name: year_number
-        description: Calendar year.
+        description: 暦年。
         data_type: integer
       - name: quarter_number
-        description: Calendar quarter (1-4).
+        description: 暦四半期（1〜4）。
         data_type: integer
       - name: month_number
-        description: Calendar month (1-12).
+        description: 暦月（1〜12）。
         data_type: integer
       - name: month_name
-        description: Full month name.
+        description: 月の正式名称。
         data_type: varchar
       - name: day_of_month
-        description: Day of the month (1-31).
+        description: 月内の日（1〜31）。
         data_type: integer
       - name: day_of_week_iso
-        description: ISO day of week (1 = Monday … 7 = Sunday).
+        description: ISO曜日番号（1＝月曜日、7＝日曜日）。
         data_type: integer
       - name: day_name
-        description: Full weekday name.
+        description: 曜日の正式名称。
         data_type: varchar
       - name: is_weekend
-        description: True for Saturday and Sunday — used for the weekend engagement lift.
+        description: 土曜日または日曜日の場合にtrue。週末エンゲージメント上昇の分析に使用する。
         data_type: boolean
       - name: week_start_date
-        description: Monday-anchored start of the week.
+        description: 月曜日始まりの週の開始日。
         data_type: date
       - name: month_start_date
-        description: First day of the month.
+        description: 月の初日。
         data_type: date
       - name: quarter_start_date
-        description: First day of the quarter.
+        description: 四半期の初日。
         data_type: date
       - name: is_within_history_window
-        description: True when the day falls inside the seeded 12-month history window.
+        description: 当日がseedされた12か月の履歴期間内にある場合にtrue。
         data_type: boolean
 
   # ------------------------------------------------------------------------------------
   - name: dim_titles
     description: >
-      Conformed title dimension with derived lifecycle stage. Lifecycle blends title age with
-      recent engagement so leadership can see, at a glance, which titles are in launch, growth,
-      mature, declining, or sunset_candidate states.
+      整合済みタイトルディメンションと算出ライフサイクル段階。タイトルの経過期間と直近エンゲージメントを
+      組み合わせ、launch、growth、mature、declining、sunset_candidateの状態を経営層が把握できる。
     config:
       contract:
         enforced: true
     columns:
       - name: title_id
-        description: Title identifier (primary key).
+        description: タイトル識別子（主キー）。
         data_type: varchar
         constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: title_name
-        description: Player-facing title name.
+        description: プレイヤー向けのタイトル名。
         data_type: varchar
         data_tests: [not_null]
       - name: genre
-        description: Primary genre of the title.
+        description: タイトルの主要ジャンル。
         data_type: varchar
       - name: sub_genre
-        description: More specific sub-genre.
+        description: より詳細なサブジャンル。
         data_type: varchar
       - name: monetization_model
-        description: How the title earns — premium, f2p, or premium_plus_dlc.
+        description: タイトルの収益化方式。premium、f2p、premium_plus_dlcのいずれか。
         data_type: varchar
         data_tests:
           - accepted_values:
@@ -152,39 +151,39 @@ models:
                 values: ['premium', 'f2p', 'premium_plus_dlc']
 
       - name: is_live_service
-        description: Whether the title is operated as an ongoing live-service game.
+        description: タイトルが継続運営型のライブサービスゲームか。
         data_type: boolean
       - name: launch_date
-        description: Worldwide launch date.
+        description: 全世界での発売日。
         data_type: date
       - name: list_price_usd
-        description: Current premium list price (0 for free-to-play).
+        description: 現在のプレミアム定価（無料プレイの場合は0）。
         data_type: number(12,2)
       - name: internal_team
-        description: Studio team that owns the title.
+        description: タイトルを担当するスタジオチーム。
         data_type: varchar
       - name: engine
-        description: Game engine the title runs on.
+        description: タイトルが動作するゲームエンジン。
         data_type: varchar
       - name: esrb_rating
-        description: ESRB content rating.
+        description: ESRBコンテンツレーティング。
         data_type: varchar
       - name: sunset_date
-        description: Date the title was formally retired, if ever. Null for all live titles.
+        description: タイトルを正式終了した日付。現行タイトルはnull。
         data_type: date
       - name: days_since_launch
-        description: Days between launch and the analysis date — the age axis for lifecycle.
+        description: 発売日から分析基準日までの日数。ライフサイクルの経過期間軸。
         data_type: integer
       - name: platform_count
-        description: Number of storefronts the title is released on.
+        description: タイトルが発売されているストアフロント数。
         data_type: integer
       - name: earliest_platform_launch_date
-        description: Earliest per-platform launch date on record.
+        description: 記録上の最も早いプラットフォーム別発売日。
         data_type: date
       - name: lifecycle_stage
         description: >
-          Derived stage: launch_window (<=90 days old), growth, mature, declining, or
-          sunset_candidate (aged with no play in 60+ days). Drives investment conversations.
+          算出された段階。launch_window（発売から90日以内）、growth、mature、declining、
+          sunset_candidate（60日以上プレイされていない経過タイトル）のいずれか。投資判断に使用する。
         data_type: varchar
         data_tests:
           - accepted_values:
@@ -192,116 +191,116 @@ models:
                 values: ['launch_window', 'growth', 'mature', 'declining', 'sunset_candidate']
 
       - name: lifetime_sessions
-        description: All sessions ever recorded for the title in the history window.
+        description: 履歴期間内にタイトルで記録された全セッション数。
         data_type: integer
       - name: lifetime_players
-        description: Distinct players who ever played the title.
+        description: タイトルをプレイした重複しないプレイヤー数。
         data_type: integer
       - name: first_session_at
-        description: Timestamp of the earliest recorded session.
+        description: 最も早い記録済みセッションのタイムスタンプ。
         data_type: timestamp_ntz
       - name: last_session_at
-        description: Timestamp of the most recent recorded session — the recency signal for sunset.
+        description: 最新の記録済みセッションのタイムスタンプ。終了判断の最新活動シグナル。
         data_type: timestamp_ntz
       - name: days_since_last_session
-        description: Days since the title was last played, as of the analysis date.
+        description: 分析基準日時点でタイトルが最後にプレイされてからの日数。
         data_type: integer
       - name: sessions_last_60d
-        description: Sessions in the trailing 60 days — near-zero flags a stalling title.
+        description: 直近60日間のセッション数。ほぼ0の場合は停滞タイトルの兆候。
         data_type: integer
       - name: active_players_last_90d
-        description: Distinct players active in the trailing 90 days.
+        description: 直近90日間にアクティブだった重複しないプレイヤー数。
         data_type: integer
       - name: avg_review_rating
-        description: Average store rating (1-5) across all reviews of the title.
+        description: タイトルの全レビューにおけるストア平均評価（1〜5）。
         data_type: number(4,2)
       - name: review_count
-        description: Number of store reviews on record.
+        description: 記録されているストアレビュー数。
         data_type: integer
       - name: recommend_rate
-        description: Share of reviews that recommend the title (0-1).
+        description: タイトルを推奨するレビューの割合（0〜1）。
         data_type: number(5,4)
 
   # ------------------------------------------------------------------------------------
   - name: dim_players
     description: >
-      Conformed player dimension. One row per registered account with acquisition, lifecycle,
-      engagement and monetization attributes. payer_segment reflects live-service spend only;
-      is_churned is behavioural (session recency), distinct from the source account_status.
+      整合済みプレイヤーディメンション。1行が1登録アカウントを表し、獲得、ライフサイクル、
+      エンゲージメント、収益化属性を持つ。payer_segmentはライブサービス支出のみを反映し、
+      is_churnedはセッションの最新性に基づく行動指標で、元のaccount_statusとは異なる。
     config:
       contract:
         enforced: true
     columns:
       - name: player_id
-        description: Player identifier (primary key).
+        description: プレイヤー識別子（主キー）。
         data_type: varchar
         constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: registered_at
-        description: Account registration timestamp (UTC).
+        description: アカウント登録タイムスタンプ（UTC）。
         data_type: timestamp_ntz
         data_tests: [not_null]
       - name: registration_cohort_month
-        description: Month the player registered — the cohort key for retention analysis.
+        description: プレイヤーが登録した月。リテンション分析のコホートキー。
         data_type: date
       - name: country_code
-        description: Cleaned ISO country code of the account.
+        description: 整形済みアカウントISO国コード。
         data_type: varchar
       - name: platform_registered_on_id
-        description: Storefront the account first registered on.
+        description: アカウントが最初に登録されたストアフロント。
         data_type: varchar
       - name: acquisition_channel
-        description: Normalized channel that acquired the player — the axis for CAC and retention-by-channel.
+        description: プレイヤーを獲得した正規化チャネル。CACとチャネル別リテンションの分析軸。
         data_type: varchar
         data_tests:
           - accepted_values:
               arguments:
                 values: ['organic', 'paid_social', 'influencer', 'store_featured', 'cross_promo']
       - name: acquisition_campaign_id
-        description: Paid campaign that acquired the player, if any.
+        description: プレイヤーを獲得した有料キャンペーン（存在する場合）。
         data_type: varchar
       - name: birth_year
-        description: Self-reported birth year.
+        description: 自己申告の出生年。
         data_type: integer
       - name: age_years
-        description: Player age as of the analysis date, derived from birth_year.
+        description: 出生年から算出した分析基準日時点のプレイヤー年齢。
         data_type: integer
       - name: marketing_opt_in
-        description: Whether the player consented to marketing contact.
+        description: プレイヤーがマーケティング連絡に同意したか。
         data_type: boolean
       - name: account_status
-        description: Source-system account state — active, dormant, churned or banned.
+        description: 元システムのアカウント状態。active、dormant、churned、bannedのいずれか。
         data_type: varchar
         data_tests:
           - accepted_values:
               arguments:
                 values: ['active', 'dormant', 'churned', 'banned']
       - name: last_login_at
-        description: Most recent login timestamp (UTC).
+        description: 最新ログインタイムスタンプ（UTC）。
         data_type: timestamp_ntz
       - name: lifetime_sessions
-        description: Total sessions the player has played.
+        description: プレイヤーがプレイした全セッション数。
         data_type: integer
       - name: lifetime_valid_sessions
-        description: Sessions excluding crashes and idle outliers — the denominator for clean engagement.
+        description: クラッシュとアイドル状態の外れ値を除外したセッション数。クリーンなエンゲージメントの分母。
         data_type: integer
       - name: lifetime_play_minutes
-        description: Total valid play time in minutes.
+        description: 有効な総プレイ時間（分）。
         data_type: number(12,2)
       - name: distinct_titles_played
-        description: Number of distinct titles the player has played.
+        description: プレイヤーがプレイした重複しないタイトル数。
         data_type: integer
       - name: first_session_at
-        description: Timestamp of the player's first session.
+        description: プレイヤーの最初のセッションのタイムスタンプ。
         data_type: timestamp_ntz
       - name: last_session_at
-        description: Timestamp of the player's most recent session.
+        description: プレイヤーの最新セッションのタイムスタンプ。
         data_type: timestamp_ntz
       - name: days_since_last_session
-        description: Days since the player last played, as of the analysis date.
+        description: 分析基準日時点でプレイヤーが最後にプレイしてからの日数。
         data_type: integer
       - name: favorite_title_id
-        description: Title the player has played most (by session count).
+        description: プレイヤーのセッション数が最も多いタイトル。
         data_type: varchar
         data_tests:
           - relationships:
@@ -310,24 +309,24 @@ models:
                 field: title_id
               config: {where: "favorite_title_id is not null"}
       - name: favorite_title_name
-        description: Name of the player's most-played title.
+        description: プレイヤーが最も多くプレイしたタイトル名。
         data_type: varchar
       - name: primary_platform_id
-        description: Storefront the player uses most.
+        description: プレイヤーが最も多く利用するストアフロント。
         data_type: varchar
       - name: live_service_net_usd
-        description: Lifetime live-service spend (iap + season_pass, net of reversals) — the basis for payer_segment.
+        description: 生涯ライブサービス支出（iap＋season_pass、取消取引控除後）。payer_segmentの基礎。
         data_type: number(12,2)
       - name: lifetime_net_revenue_usd
-        description: Lifetime net revenue from the player across all streams (premium, iap, season, dlc, less reversals).
+        description: 全ストリーム（premium、iap、season、dlc、取消取引控除後）におけるプレイヤーの生涯純収益。
         data_type: number(12,2)
       - name: lifetime_studio_net_usd
-        description: Lifetime revenue net of storefront fees — what the studio actually keeps.
+        description: ストアフロント手数料控除後の生涯収益。スタジオが実際に保持する金額。
         data_type: number(12,2)
       - name: payer_segment
         description: >
-          Live-service payer tier — whale, dolphin, minnow or non_payer — from lifetime iap +
-          season_pass spend. A non_payer may still have bought a premium title or DLC.
+          生涯iap＋season_pass支出から算出したライブサービス課金階層。whale、dolphin、minnow、
+          non_payerのいずれか。non_payerでもプレミアムタイトルやDLCを購入している場合がある。
         data_type: varchar
         data_tests:
           - accepted_values:
@@ -335,15 +334,15 @@ models:
                 values: ['whale', 'dolphin', 'minnow', 'non_payer']
 
       - name: is_payer
-        description: True if the player has any lifetime live-service spend.
+        description: プレイヤーに生涯ライブサービス支出がある場合にtrue。
         data_type: boolean
       - name: first_purchase_at
-        description: Timestamp of the player's first acquisition transaction, if any.
+        description: プレイヤーの初回獲得取引のタイムスタンプ（存在する場合）。
         data_type: timestamp_ntz
       - name: is_churned
         description: >
-          Behavioural churn flag — true when the player's last session is older than the
-          churn threshold ({{ var('churn_days_threshold') }} days) as of the analysis date.
+          行動ベースの離脱フラグ。分析基準日時点でプレイヤーの最終セッションが離脱閾値
+          （{{ var('churn_days_threshold') }}日）より古い場合にtrue。
         data_type: boolean
 
   # ====================================================================================
@@ -351,15 +350,15 @@ models:
   # ====================================================================================
   - name: fct_play_sessions
     description: >
-      One row per play session. The central engagement fact: duration, validity, the release
-      in effect at session time, and the week offset from registration for retention.
-      Engagement semantic model over the session fact.
+      1行が1プレイセッションを表す。時間、妥当性、セッション時点で適用されたリリース、
+      リテンション分析用の登録からの週次オフセットを持つ中核エンゲージメントファクト。
+      セッションファクト上のエンゲージメントセマンティックモデル。
     config:
       contract:
         enforced: true
     columns:
       - name: session_id
-        description: Session identifier (primary key; deduplicated upstream).
+        description: セッション識別子（主キー、上流で重複排除済み）。
         data_type: varchar
         constraints: [type: not_null]
         data_tests: [unique, not_null]
@@ -367,7 +366,7 @@ models:
           type: primary
           name: session
       - name: player_id
-        description: Player who played the session.
+        description: セッションをプレイしたプレイヤー。
         data_type: varchar
         data_tests:
           - not_null
@@ -377,7 +376,7 @@ models:
           type: foreign
           name: player
       - name: title_id
-        description: Title played.
+        description: プレイされたタイトル。
         data_type: varchar
         data_tests:
           - not_null
@@ -387,7 +386,7 @@ models:
           type: foreign
           name: title
       - name: platform_id
-        description: Storefront the session ran on.
+        description: セッションが実行されたストアフロント。
         data_type: varchar
         data_tests:
           - not_null
@@ -395,7 +394,7 @@ models:
           type: foreign
           name: platform
       - name: release_id_in_effect
-        description: The release live for this title at session start (null if before any release).
+        description: セッション開始時点でタイトルに適用されていたリリース。リリース前の場合はnull。
         data_type: varchar
         data_tests:
           - relationships:
@@ -405,72 +404,72 @@ models:
               config: {where: "release_id_in_effect is not null"}
 
       - name: session_start_at
-        description: Session start (UTC).
+        description: セッション開始時刻（UTC）。
         data_type: timestamp_ntz
         data_tests: [not_null]
       - name: session_end_at
-        description: Session end (UTC). Null when the client crashed before closing.
+        description: セッション終了時刻（UTC）。終了前にクライアントがクラッシュした場合はnull。
         data_type: timestamp_ntz
       - name: session_date
-        description: Calendar date of the session start.
+        description: セッション開始日の暦日。
         data_type: date
         dimension:
           type: time
           name: session_day
         granularity: day
       - name: session_month
-        description: Month of the session — the grain for monthly engagement marts.
+        description: セッションの月。月次エンゲージメントマートの粒度。
         data_type: date
       - name: session_week
-        description: Week of the session (Monday-anchored).
+        description: セッションの週（月曜日始まり）。
         data_type: date
       - name: duration_seconds
-        description: Raw session length in seconds (null for crash sessions).
+        description: 元のセッション時間（秒）。クラッシュセッションではnull。
         data_type: integer
       - name: session_duration_minutes
-        description: Session length in minutes.
+        description: セッション時間（分）。
         data_type: number(12,2)
       - name: is_valid_session
-        description: True for clean sessions used in engagement metrics — excludes crashes and idle outliers.
+        description: エンゲージメント指標に使用する正常なセッションの場合にtrue。クラッシュとアイドル状態の外れ値を除外。
         data_type: boolean
         dimension:
           type: categorical
       - name: levels_completed
-        description: Levels or matches completed in the session.
+        description: セッション中に完了したレベルまたはマッチ数。
         data_type: integer
       - name: crashed_flag
-        description: True if the client reported a crash.
+        description: クライアントがクラッシュを報告した場合にtrue。
         data_type: boolean
       - name: network_type
-        description: Network used — wifi, cellular or ethernet.
+        description: 使用ネットワーク。wifi、cellular、ethernetのいずれか。
         data_type: varchar
         dimension:
           type: categorical
       - name: device_model
-        description: Device or hardware model.
+        description: デバイスまたはハードウェアのモデル。
         data_type: varchar
       - name: app_version
-        description: Client version reported by the session.
+        description: セッションから報告されたクライアントバージョン。
         data_type: varchar
       - name: release_version_in_effect
-        description: Semantic version of the release in effect at session time.
+        description: セッション時点で適用されていたリリースのセマンティックバージョン。
         data_type: varchar
       - name: country_code
-        description: Cleaned country the session originated from.
+        description: セッション発生国の整形済み国コード。
         data_type: varchar
       - name: registration_cohort_month
-        description: Registration cohort month of the player — carried for cohort-sliced engagement.
+        description: プレイヤーの登録コホート月。コホート別エンゲージメント分析用に保持する。
         data_type: date
         dimension:
           type: time
         granularity: month
       - name: week_offset_from_registration
-        description: Whole weeks between registration and the session (0 = registration week).
+        description: 登録からセッションまでの経過週数（0は登録週）。
         data_type: integer
         dimension:
           type: categorical
       - name: is_weekend_session
-        description: True when the session started on a Saturday or Sunday.
+        description: セッションが土曜日または日曜日に開始した場合にtrue。
         data_type: boolean
     semantic_model:
       enabled: true
@@ -478,45 +477,48 @@ models:
     agg_time_dimension: session_day
     metrics:
       - name: monthly_active_players
-        label: Monthly active players
-        description: Distinct players active in a period (query at the month grain for MAP).
+        label: 月間アクティブプレイヤー数
+        description: 期間中にアクティブだったユニークプレイヤー数（月間アクティブプレイヤー数は月単位でクエリしてください）。
         type: simple
         agg: count_distinct
         expr: player_id
       - name: cohort_players
-        label: Cohort players
-        description: Distinct players (the retention denominator).
+        label: コホートプレイヤー数
+        description: ユニークプレイヤー数（リテンションの分母）。
         type: simple
         agg: count_distinct
         expr: player_id
       - name: week4_returned_players
-        label: Week-4 returned players
-        description: Distinct players active in their fourth week after registration.
+        label: 登録後4週目の復帰プレイヤー数
+        description: 登録後4週目にアクティブだったユニークプレイヤー数。
         type: simple
         filter: "{{ Dimension('session__week_offset_from_registration') }} = 4"
         agg: count_distinct
         expr: player_id
       - name: session_count
-        description: Number of play sessions.
+        label: プレイセッション数
+        description: プレイセッションの数。
         agg: count
         expr: session_id
         type: simple
         hidden: true
       - name: valid_session_count
-        description: Sessions excluding crashes and idle outliers.
+        label: 有効セッション数
+        description: クラッシュとアイドル状態の外れ値を除外したセッション数。
         agg: sum
         expr: "case when is_valid_session then 1 else 0 end"
         type: simple
         hidden: true
       - name: play_minutes
-        description: Total valid play minutes.
+        label: 有効プレイ時間（分）
+        description: 有効なプレイ時間の合計（分）。
         agg: sum
         expr: session_duration_minutes
         type: simple
         hidden: true
       - name: week_4_retention
-        label: Week-4 retention
-        description: Players active in week 4 after registration over all players.
+        label: 登録後4週目リテンション
+        description: 登録後4週目にアクティブだったプレイヤー数を全プレイヤー数で割った割合。
         type: ratio
         numerator: week4_returned_players
         denominator: cohort_players
@@ -524,15 +526,14 @@ models:
   # ------------------------------------------------------------------------------------
   - name: fct_transactions
     description: >-
-      One row per transaction with signed net amounts and studio net revenue. Refunds and
-      chargebacks are negative here (they arrive positive in source). transaction_at is UTC.
-      Monetization semantic model over the transaction fact.
+      1行が1取引を表し、符号付き純額とスタジオ純収益を持つ。返金とチャージバックは
+      元データでは正数だが、ここでは負数。transaction_atはUTC。取引ファクト上の収益化セマンティックモデル。
     config:
       contract:
         enforced: true
     columns:
       - name: transaction_id
-        description: Transaction identifier (primary key).
+        description: 取引識別子（主キー）。
         data_type: varchar
         constraints: [type: not_null]
         data_tests: [unique, not_null]
@@ -540,7 +541,7 @@ models:
           type: primary
           name: transaction
       - name: player_id
-        description: Player who transacted.
+        description: 取引を行ったプレイヤー。
         data_type: varchar
         data_tests:
           - not_null
@@ -550,7 +551,7 @@ models:
           type: foreign
           name: player
       - name: title_id
-        description: Title the transaction is attributed to.
+        description: 取引が帰属するタイトル。
         data_type: varchar
         data_tests:
           - not_null
@@ -560,7 +561,7 @@ models:
           type: foreign
           name: title
       - name: platform_id
-        description: Storefront the transaction cleared on.
+        description: 取引が決済されたストアフロント。
         data_type: varchar
         data_tests:
           - not_null
@@ -568,7 +569,7 @@ models:
           type: foreign
           name: platform
       - name: sku_id
-        description: SKU purchased; null for premium (base-game) purchases.
+        description: 購入されたSKU。プレミアム本体購入ではnull。
         data_type: varchar
         data_tests:
           - relationships:
@@ -577,24 +578,24 @@ models:
                 field: sku_id
               config: {where: "sku_id is not null"}
       - name: transaction_at
-        description: Transaction timestamp in UTC (converted from America/New_York).
+        description: UTCの取引タイムスタンプ（America/New_Yorkから変換）。
         data_type: timestamp_ntz
         data_tests: [not_null]
       - name: transaction_at_local
-        description: Original transaction timestamp in America/New_York wall-clock, kept for audit.
+        description: 監査用に保持するAmerica/New_York現地時刻の元の取引タイムスタンプ。
         data_type: timestamp_ntz
       - name: transaction_date
-        description: Calendar date of the transaction (UTC).
+        description: 取引の暦日（UTC）。
         data_type: date
         dimension:
           type: time
           name: transaction_day
         granularity: day
       - name: transaction_month
-        description: Month of the transaction — the grain for monthly revenue marts.
+        description: 取引月。月次収益マートの粒度。
         data_type: date
       - name: transaction_type
-        description: premium_purchase, iap, season_pass, dlc, refund or chargeback.
+        description: premium_purchase、iap、season_pass、dlc、refund、chargebackのいずれか。
         data_type: varchar
         data_tests:
           - accepted_values:
@@ -603,7 +604,7 @@ models:
         dimension:
           type: categorical
       - name: revenue_stream_group
-        description: Grouped stream — live_service, catalog or reversal — for stream-level finance cuts.
+        description: ストリーム別財務分析用の分類。live_service、catalog、reversalのいずれか。
         data_type: varchar
         data_tests:
           - accepted_values:
@@ -613,28 +614,28 @@ models:
           type: categorical
 
       - name: is_live_service_revenue
-        description: True for iap/season_pass and their reversals — the live-service revenue base.
+        description: iap、season_pass、およびそれらの取消取引の場合にtrue。ライブサービス収益の基礎。
         data_type: boolean
       - name: is_first_purchase
-        description: True if this is the player's first acquisition transaction.
+        description: プレイヤーの初回獲得取引の場合にtrue。
         data_type: boolean
       - name: currency_code
-        description: Currency the player was charged in.
+        description: プレイヤーに請求した通貨。
         data_type: varchar
       - name: payment_method
-        description: Payment instrument used.
+        description: 使用された決済手段。
         data_type: varchar
       - name: gross_amount_usd
-        description: Gross amount in USD, positive for sales.
+        description: 売上総額（USD、販売は正数）。
         data_type: number(12,2)
       - name: platform_fee_usd
-        description: Storefront fee withheld on the transaction.
+        description: 取引から差し引かれたストアフロント手数料。
         data_type: number(12,2)
       - name: net_amount_usd
-        description: Signed net amount — negative for refunds and chargebacks.
+        description: 符号付き純額。返金とチャージバックは負数。
         data_type: number(12,2)
       - name: studio_net_revenue_usd
-        description: Signed revenue net of storefront fees — the studio's recognized take.
+        description: ストアフロント手数料控除後の符号付き収益。スタジオの認識収益。
         data_type: number(12,2)
     semantic_model:
       enabled: true
@@ -642,120 +643,122 @@ models:
     agg_time_dimension: transaction_day
     metrics:
       - name: net_revenue
-        label: Net revenue (USD)
-        description: Net revenue across all streams, refunds and chargebacks netted out.
+        label: 純収益（USD）
+        description: すべての収益ストリームを対象とした純収益。返金とチャージバックを相殺済み。
         type: simple
         agg: sum
         expr: net_amount_usd
       - name: paying_players
-        label: Paying players
-        description: Distinct players with positive net spend.
+        label: 課金プレイヤー数
+        description: 純支出が正のユニークプレイヤー数。
         type: simple
         agg: count_distinct
         expr: "case when net_amount_usd > 0 then player_id end"
       - name: studio_net_revenue
-        description: Net revenue after storefront fees.
+        label: スタジオ純収益
+        description: ストア手数料控除後の純収益。
         agg: sum
         expr: studio_net_revenue_usd
         type: simple
         hidden: true
       - name: gross_revenue
-        description: Gross transaction amount in USD.
+        label: 売上総額（USD）
+        description: 取引総額（USD）。
         agg: sum
         expr: gross_amount_usd
         type: simple
         hidden: true
       - name: arppu
-        label: ARPPU (USD)
-        description: Average net revenue per paying player.
+        label: 課金プレイヤー1人あたり平均純収益（USD）
+        description: 課金プレイヤー1人あたりの平均純収益。
         type: ratio
         numerator: net_revenue
         denominator: paying_players
   - name: fct_high_scores
     description: >
-      One row per leaderboard submission. Cheat-flagged submissions are retained and counted
-      but excluded from ranking; leaderboard_rank and score_percentile cover legit rows only.
+      1行が1リーダーボード投稿を表す。不正フラグ付き投稿も保持・計上するがランキングから除外し、
+      leaderboard_rankとscore_percentileは正当な行だけを対象とする。
     config:
       contract:
         enforced: true
     columns:
       - name: score_id
-        description: Submission identifier (primary key).
+        description: 投稿識別子（主キー）。
         data_type: varchar
         constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: player_id
-        description: Player who submitted the score.
+        description: スコアを投稿したプレイヤー。
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_players'), field: player_id}
       - name: title_id
-        description: Title the leaderboard belongs to.
+        description: リーダーボードが属するタイトル。
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_titles'), field: title_id}
       - name: leaderboard_id
-        description: Leaderboard the score was submitted to.
+        description: スコアが投稿されたリーダーボード。
         data_type: varchar
       - name: score_value
-        description: Raw submitted score.
+        description: 投稿された元のスコア。
         data_type: number(38,0)
       - name: submitted_at
-        description: Submission timestamp (UTC).
+        description: 投稿タイムスタンプ（UTC）。
         data_type: timestamp_ntz
       - name: submitted_date
-        description: Calendar date of the submission.
+        description: 投稿の暦日。
         data_type: date
       - name: is_verified
-        description: Whether the score passed server-side verification.
+        description: スコアがサーバー側検証を通過したか。
         data_type: boolean
       - name: flagged_for_cheating
-        description: Whether anti-cheat flagged the submission as suspicious.
+        description: アンチチートが投稿を不審としてフラグ付けしたか。
         data_type: boolean
       - name: leaderboard_rank
-        description: Rank within the leaderboard among legit submissions (null for flagged rows).
+        description: 正当な投稿におけるリーダーボード内順位（フラグ付き行はnull）。
         data_type: integer
       - name: score_percentile
-        description: Percentile of the score among legit submissions on the leaderboard (0-1).
+        description: リーダーボードの正当な投稿におけるスコアのパーセンタイル（0〜1）。
         data_type: number(6,4)
 
   # ------------------------------------------------------------------------------------
   - name: fct_releases
     description: >
-      One row per release with development variance and a matched 10-day before/after
-      engagement delta (sessions, active players, crash rate, session length). Powers the
-      live-ops "did this release help or hurt?" question.
+      1行が1リリースを表し、開発日数差分と、リリース前後10日間を比較したエンゲージメント差分
+      （セッション、アクティブプレイヤー、クラッシュ率、セッション時間）を持つ。
+      ライブ運用における「このリリースは改善したか悪化させたか」という分析に使用する。
     config:
       contract:
         enforced: true
     columns:
       - name: release_id
-        description: Release identifier (primary key).
+        description: リリース識別子（主キー）。
         data_type: varchar
         constraints: [type: not_null]
         data_tests: [unique, not_null]
       - name: title_id
-        description: Title the release shipped for.
+        description: リリースが配信されたタイトル。
         data_type: varchar
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_titles'), field: title_id}
       - name: app_version
-        description: Semantic version shipped.
+        description: 配信されたセマンティックバージョン。
         data_type: varchar
       - name: released_at
-        description: Release timestamp (UTC).
+        description: リリースタイムスタンプ（UTC）。
         data_type: timestamp_ntz
       - name: released_date
-        description: Calendar date of the release.
+        description: リリースの暦日。
         data_type: date
       - name: release_type
-        description: major, minor, hotfix, content_drop or event.
+        description: major、minor、hotfix、content_drop、eventのいずれかのリリース種別。
         data_type: varchar
         data_tests:
           - accepted_values:
@@ -763,57 +766,57 @@ models:
                 values: ['major', 'minor', 'hotfix', 'content_drop', 'event']
 
       - name: is_rollback
-        description: True if the release rolled back a prior one.
+        description: リリースが以前のリリースをロールバックした場合にtrue。
         data_type: boolean
       - name: dev_days_estimated
-        description: Engineering days budgeted.
+        description: 予算として見積もった開発日数。
         data_type: integer
       - name: dev_days_actual
-        description: Engineering days actually spent.
+        description: 実際に費やした開発日数。
         data_type: integer
       - name: dev_days_variance
-        description: Actual minus estimated dev days — positive means over budget.
+        description: 実績開発日数から見積開発日数を引いた差分。正数は予算超過を示す。
         data_type: integer
       - name: dev_days_variance_pct
-        description: Dev-day variance as a fraction of the estimate.
+        description: 見積に対する開発日数差分の割合。
         data_type: number(9,4)
       - name: is_over_budget
-        description: True when the release took longer than estimated.
+        description: リリースに見積以上の開発日数を要した場合にtrue。
         data_type: boolean
       - name: qa_bug_count
-        description: QA-logged bugs associated with the release.
+        description: リリースに紐づくQA起票バグ数。
         data_type: integer
       - name: sessions_10d_before
-        description: Sessions for the title in the 10 days before release.
+        description: リリース前10日間のタイトルのセッション数。
         data_type: integer
       - name: sessions_10d_after
-        description: Sessions for the title in the 10 days after release.
+        description: リリース後10日間のタイトルのセッション数。
         data_type: integer
       - name: session_count_delta
-        description: After-minus-before session count — the headline engagement swing.
+        description: リリース後からリリース前を引いたセッション数差分。主要なエンゲージメント変動。
         data_type: integer
       - name: active_players_10d_before
-        description: Distinct active players in the 10 days before release.
+        description: リリース前10日間の重複しないアクティブプレイヤー数。
         data_type: integer
       - name: active_players_10d_after
-        description: Distinct active players in the 10 days after release.
+        description: リリース後10日間の重複しないアクティブプレイヤー数。
         data_type: integer
       - name: crash_rate_10d_before
-        description: Share of sessions that crashed in the 10 days before release.
+        description: リリース前10日間にクラッシュしたセッションの割合。
         data_type: number(6,4)
       - name: crash_rate_10d_after
-        description: Share of sessions that crashed in the 10 days after release — spikes flag bad builds.
+        description: リリース後10日間にクラッシュしたセッションの割合。急上昇は不良ビルドの兆候。
         data_type: number(6,4)
       - name: avg_minutes_10d_before
-        description: Average valid session length (minutes) in the 10 days before release.
+        description: リリース前10日間の有効セッション平均時間（分）。
         data_type: number(12,2)
       - name: avg_minutes_10d_after
-        description: Average valid session length (minutes) in the 10 days after release.
+        description: リリース後10日間の有効セッション平均時間（分）。
         data_type: number(12,2)
       - name: made_engagement_worse
         description: >
-          True when the release cut sessions or raised the crash rate by more than 5 points —
-          the flag that surfaces regressions like the engineered Engine 5 major.
+          リリースによりセッション数が減少するか、クラッシュ率が5ポイント超上昇した場合にtrue。
+          Engine 5のメジャーリリースのような劣化を検出するフラグ。
         data_type: boolean
 
 unit_tests:
